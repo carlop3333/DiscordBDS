@@ -1,0 +1,11 @@
+{
+    "token": "your-token",
+    "clientID": "your-application-id",
+    "guildID": "your-guild-id",
+    "chatID": "your-chat-id",
+    "serverPort": 5064,
+    "useRedmean": false,
+    "geyserEmbed": false,
+    "serverType": "server-net",
+    "version": "0.1.0"
+}
