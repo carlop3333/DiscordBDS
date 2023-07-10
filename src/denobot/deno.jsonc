@@ -1,0 +1,26 @@
+{
+	"imports": {
+		"std/": "https://deno.land/std@0.193.0/",
+		"cheerio": "npm:cheerio@^1.0.0-rc.12"
+	},
+	"tasks": {
+		"run": "deno run main.ts"
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 120,
+		"indentWidth": 4,
+		"semiColons": true,
+		"singleQuote": true
+	},
+	"compilerOptions": {
+		//Kappa
+		"allowJs": false,
+		"lib": [
+			"deno.window"
+		],
+		"strict": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false
+	}
+}
