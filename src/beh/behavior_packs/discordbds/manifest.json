@@ -1,10 +1,10 @@
 {
   "format_version": 2,
   "header": {
-    "name": "DiscordBDS",
-    "description": "Discord-to-Bedrock addon (REQUIRES BDS!!!!)",
-    "uuid": "14e467b4-e3aa-49d3-8352-f8439fd7b2ee",
-    "version": [0, 1, 0],
+    "name": "DiscordBDS BehaviorPack",
+    "description": "REQUIRED BDS!!!",
+    "uuid": "2a0e23d7-d74c-4af5-bb25-606a4b22cc8e",
+    "version": [0, 2, 0],
     "min_engine_version": [1, 20, 0]
   },
   "modules": [
@@ -12,8 +12,8 @@
       "description": "Script resources",
       "language": "javascript",
       "type": "script",
-      "uuid": "7c7e693f-99f4-41a9-95e0-1f57b37e1e12",
-      "version": [0, 0, 4],
+      "uuid": "dadae28e-f942-4d83-b9f5-240c300f0d19",
+      "version": [0, 0, 1],
       "entry": "scripts/main.js"
     }
   ],
@@ -25,6 +25,11 @@
     {
       "module_name": "@minecraft/server-net",
       "version": "1.0.0-beta"
+    },
+    {
+      "module_name": "@minecraft/server-admin",
+      "version": "1.0.0-beta"
     }
-  ]
+  ],
+  "capabilities": ["script_eval"]
 }

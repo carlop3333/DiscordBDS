@@ -1,7 +1,8 @@
 {
 	"imports": {
+		"cheerio": "npm:cheerio@^1.0.0-rc.12",
 		"std/": "https://deno.land/std@0.193.0/",
-		"cheerio": "npm:cheerio@^1.0.0-rc.12"
+		"discord": "https://deno.land/x/harmony@v2.8.0/mod.ts"
 	},
 	"tasks": {
 		"run": "deno run main.ts"
@@ -14,7 +15,6 @@
 		"singleQuote": true
 	},
 	"compilerOptions": {
-		//Kappa
 		"allowJs": false,
 		"lib": [
 			"deno.window"

@@ -2,6 +2,7 @@ import * as cheerio from "cheerio";
 import { Buffer } from "node:buffer";
 
 
+
 class XUIDGrabber {
   async #getTokens() {
     const webScrap = await fetch("https://www.cxkes.me/xbox/xuid");
@@ -68,4 +69,16 @@ class XUIDGrabber {
 }
 
 export const xuidGrabber = new XUIDGrabber()
+
+if (typeof(Deno.args[0]) !== typeof(undefined)) {
+  if (Deno.args[1] == "--detailed") {
+    const data = await xuidGrabber.getUserData(Deno.args[0])
+    data?.forEach((val, key) => {
+      console.log(`${key}: ${val}`)
+    })
+  } else {
+    const data = await xuidGrabber.getUserData(Deno.args[0])
+    console.log(`XUID: ${data?.get("xuid-dec")}`)
+  }
+}
 
