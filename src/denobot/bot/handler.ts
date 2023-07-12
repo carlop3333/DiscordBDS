@@ -48,6 +48,7 @@ class bedrockHandler extends EventEmitter {
       contents: Record<string | number, symbol | null>;
     }
   ) {
+    // TODO: Edit me
     this.emit(signalName, content);
   }
 }

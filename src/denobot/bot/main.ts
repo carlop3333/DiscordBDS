@@ -30,15 +30,14 @@ if (typeof Deno.args[0] !== typeof undefined) {
 }
 
 const client = new CommandClient({
-  intents: [GatewayIntents.MESSAGE_CONTENT, GatewayIntents.GUILD_MESSAGES, GatewayIntents.GUILD_WEBHOOKS,], token: debug ? Deno.args[0] : config.token, id: debug ? Deno.args[1] : config.clientID,
+  intents: [GatewayIntents.MESSAGE_CONTENT, GatewayIntents.GUILD_MESSAGES, GatewayIntents.GUILD_WEBHOOKS, GatewayIntents.DIRECT_MESSAGES, GatewayIntents.GUILDS], token: debug ? Deno.args[0] : config.token, id: debug ? Deno.args[1] : config.clientID,
   prefix: "/",
 });
-client.connect(); console.log(`Starting bot!`);
 client.on("ready", () => {
   console.log("Started Bot!");
 });
 client.on('messageCreate', info => {
-  if (info.channelID === (debug ? JSON.parse(Deno.args[3]).chatOptions.chat : config.chatOptions.chat)) {
+  if (info.channelID === (debug ? Deno.args[3] : config.chatOptions.chat)) {
     if (isBedrockServer) {
       const msg: messageRequest = {requestType: "message", data: {authorName: info.author.username, message: info.content, rank: ""}}
       reqHandler.once('dmessage', mesg => {
@@ -46,14 +45,24 @@ client.on('messageCreate', info => {
         mesg.requestType = msg.requestType;
       })
     } else {
-      info.channel.send({reply: "The server is still not enabled!"})
+      if (!info.author.bot) {
+        info.channel.send("The server is still not enabled!",undefined,info)
+      }
     }
-  }
+  } 
+})
+client.connect(); console.log(`Starting bot!`);
+
+
+//Should we move all of these reqhandlers on a folder?
+reqHandler.on("ready", async (req) => {
+  console.log('Server connected!');
+  await client.channels.sendMessage(Deno.args[3], "**Server started!**")
+  req.requestType = "update"
 })
 
-
 // Bedrock server
-const requestTypes = ["message", "connect", "ready"]
+const requestTypes = ["dmessage", "connect", "ready", "update"]
 async function bedrockRequest(req: Request, comm: HTTPLib.ConnInfo) {
   if (debug) console.log(`Connected user: ${comm.remoteAddr}`);
   if (req.headers.get("Content-Type") == "application/json") {
@@ -74,4 +83,6 @@ const bedrockServer = new HTTPLib.Server({ handler: await bedrockRequest });
 
 await bedrockServer.serve(Deno.listen({ port: config.serverPort })).then(() => {
   console.log(`Server opened on localhost:${config.serverPort}`);
+}, err => {
+  console.error(err)
 });
