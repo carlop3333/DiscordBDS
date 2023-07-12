@@ -1,9 +1,17 @@
 {
-        "token": "",
-        "clientID": "",
-        "guildID": "",
-        "chatOptions": {
-            "chat": ""
-        },
-        "serverPort": 5056
+  "token": "your-token-id",
+  "clientID": "your-client-id",
+  "guildID": "your-guild-id",
+  "chatOptions": {
+    "global": "global-chat-anulates-all-below-ones",
+    "chat": "your-chat-id",
+    "deaths": "your-death-chat",
+    "staff": "your-staff-chat-not-console",
+    "status": "your-status-chat",
+    "broadcast": "your-broadcast-channel"
+  },
+  "serverPort": 5056,
+  "useGeyserEmbed": false,
+  "rankHandler": "normal",
+  "version": "0.2.0"
 }
