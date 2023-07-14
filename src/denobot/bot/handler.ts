@@ -17,24 +17,28 @@ declare interface bedrockHandler {
   on(event: "ready", listener: (genericRequest: genericRequest) => void): this;
   on(event: "connect", listener: (connectRequest: connectRequest) => void): this;
   on(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
-  once(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
   on(event: "update", listener: (genericRequest: genericRequest) => void): this;
-  on(event: string, listener: Function): this;
+  on(event: string, listener: unknown): this;
+
+  once(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
+  once(event: string, listener: unknown): this;
+
 
   awaitForPayload(eventName: string, payloadToRecieve: (payload: Object) => void): void;
   awaitForPayload(eventName: "dmessage", payloadToRecieve?: (payload: messageRequest) => void): void;
 }
 
 class bedrockHandler extends EventEmitter {
+  async sendPayload(payload: string, dataToSend: Object) {
+    this.emit(`${payload}x`, dataToSend)
+  }
   async awaitForPayload(
     eventName: string,
     payloadToRecieve: (payload: Object) => void
   ) {
-    let obj = {};
-    const a = await this.emit(eventName, obj);
-    if (a) {
-        payloadToRecieve(obj)
-    }
+    this.once(`${eventName}x`, (payload: object) => {
+      payloadToRecieve(payload)
+    })
   }
   /**
    * Sends a custom signal to minecraft
