@@ -11,7 +11,7 @@ import { messageRequest, reqHandler } from "./handler.ts";
 
 //Don't touch also
 let isBedrockServer = false;
-let debug = false;
+export let debug = false;
 
 //Update handler will no longer shutdown the bot, instead will show a warning :+1:
 const update = await fetch(
@@ -64,7 +64,7 @@ async function bedrockRequest(req: Request, comm: HTTPLib.ConnInfo) {
   let object = ""
   if (debug) console.log(`Connected user: ${comm.remoteAddr}`);
   if (req.headers.get("Content-Type") == "application/json") {
-    const rdata = JSON.parse(await req.text());
+    const rdata = await req.json();
     requestTypes.forEach(async (val) => {
       if (rdata.requestType == val) {
         try {
