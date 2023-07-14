@@ -1,2 +1,3 @@
 /node_modules
 # Never, NEVER put package-lock.json here, its very important (otherwise the autocompletions break)
+/build
