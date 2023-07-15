@@ -9,6 +9,7 @@ Embed,
 import config from "./config.json" assert { type: "json" };
 import { messageRequest, reqHandler, genericRequest } from "./handler.ts";
 import { colorComp } from "./utils.ts";
+import { xuidGrabber } from "./xuid/grabber.ts";
 
 //Don't touch also
 let isBedrockServer = false;
@@ -61,7 +62,7 @@ client.connect(); console.log(`Starting bot!`);
 
 
 //Should we move all of these reqhandlers on a folder?
-reqHandler.on("ready", async (req) => {
+reqHandler.on("ready", async () => {
   await client.channels.sendMessage(Deno.args[3], ":white_check_mark: **Server started!**")
   isBedrockServer = true;
   reqHandler.sendPayload("ready", {requestType: "update"})
@@ -75,15 +76,32 @@ reqHandler.on('update', async () => {
   })
 })
 reqHandler.on('connect', async (connect) => {
-  if (config.useGeyserEmbed) {
-
-  } else {
-    const embed = new Embed()
+  const embed = new Embed() 
+  connect.data.join ? embed.setColor(255,0,0) : embed.setColor(0, 255, 34);
+  try {
+    if (config.useGeyserEmbed) {
+      const xuid = await xuidGrabber.getUserData(connect.data.authorName)
+      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
+      GeyserGrab.json().then((datat) => {
+        embed.setAuthor({
+          name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`,
+          icon_url: `https://mc-heads.net/avatar/${datat.texture_id}`,
+          url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
+        })
+      })
+    } else {
+      embed.setAuthor({name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`, 
+      url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
+    })
+    }
+    await client.channels.sendMessage(Deno.args[3], embed, embed);
+  } catch (e) {
+    console.error(e)
   }
 })
 
 
-const requestTypes = ["dmessage", "connect", "ready", "update"]
+const requestTypes = ["dmessage", "connect", "ready", "update", "mcmessage"]
 // Bedrock server (Shit to declare before this comment)
 const listener = Deno.listen({ port: config.serverPort });
 console.log(`Server opened on localhost:${config.serverPort}`);
@@ -116,7 +134,7 @@ async function bedrockRequestFallback(conn: Deno.Conn) {
             if (rdata.requestType == val) {
               console.log(val) //debug
               try {
-                reqHandler.emit(val)
+                reqHandler.emit(val, rdata)
                 await reqHandler.awaitForPayload(val, payload => {
                   if (debug) console.log("Sending payload!");
                   req.respondWith(new Response(JSON.stringify(payload),{status: 200}))

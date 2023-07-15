@@ -12,11 +12,13 @@ export interface messageRequest extends genericRequest {
 }
 
 //add here for linting and for the compiler not dying
+//I know this is useless, but for the sake of the autocompletions...
 declare interface bedrockHandler {
   // Things used for promises need "once"!!!
   on(event: "ready", listener: (genericRequest: genericRequest) => void): this;
   on(event: "connect", listener: (connectRequest: connectRequest) => void): this;
   on(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
+  on(event: "mcmessage", listener: (messageRequest: messageRequest) => void): this;
   on(event: "update", listener: (genericRequest: genericRequest) => void): this;
   on(event: string, listener: unknown): this;
 

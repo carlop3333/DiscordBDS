@@ -83,11 +83,11 @@ world.afterEvents.chatSend.subscribe((chat) => {
 
 world.afterEvents.playerJoin.subscribe((info) => {
   var conn: connectRequest;
-  conn = { requestType: "mcmessage", data: { authorName: info.playerName, join: true } };
-  reqHandler.sendPayload("mcmessage", conn);
+  conn = { requestType: "connect", data: { authorName: info.playerName, join: true } };
+  reqHandler.sendPayload("connect", conn);
 });
 world.afterEvents.playerLeave.subscribe((info) => {
   var conn: connectRequest;
-  conn = { requestType: "mcmessage", data: { authorName: info.playerName, join: false } };
-  reqHandler.sendPayload("mcmessage", conn);
+  conn = { requestType: "connect", data: { authorName: info.playerName, join: false } };
+  reqHandler.sendPayload("connect", conn);
 });
