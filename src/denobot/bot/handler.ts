@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 
 //interface declare
-interface genericRequest {
+export interface genericRequest {
   requestType: string;
 }
 export interface connectRequest extends genericRequest {
@@ -29,10 +29,10 @@ declare interface bedrockHandler {
 }
 
 class bedrockHandler extends EventEmitter {
-  async sendPayload(payload: string, dataToSend: Object) {
+  public sendPayload(payload: string, dataToSend: Object) {
     this.emit(`${payload}x`, dataToSend)
   }
-  async awaitForPayload(
+  public awaitForPayload(
     eventName: string,
     payloadToRecieve: (payload: Object) => void
   ) {
@@ -40,12 +40,13 @@ class bedrockHandler extends EventEmitter {
       payloadToRecieve(payload)
     })
   }
+  
   /**
    * Sends a custom signal to minecraft
    * @param signalName The custom signal of the name (TODO: Set signals on the wiki)
    * @param content The custom content to send, useful for other addons
    */
-  sendCustDiscordSignal(
+  public sendCustDiscordSignal(
     signalName: string,
     content: {
       requestType: "custom";
