@@ -1,4 +1,7 @@
 # DiscordBDS - Deno Rewrite Branch
+
+![Downloads](https://img.shields.io/github/downloads/carlop3333/DiscordBDS/total?style=social&logo=deno)
+
 A (experimental) addon that connects Discord and BDS (Bedrock Dedicated Server) and viceversa with your friends!
 
 - Connect your chat from Discord to Minecraft!
