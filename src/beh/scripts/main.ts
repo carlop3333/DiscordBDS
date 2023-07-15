@@ -1,6 +1,6 @@
 import * as net from "@minecraft/server-net";
 import * as admin from "@minecraft/server-admin";
-import { world, TicksPerSecond, system } from "@minecraft/server";
+import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
 import { bedrockHandler, connectRequest, messageRequest } from "./events";
 
 const reqHandler = new bedrockHandler();
@@ -16,7 +16,7 @@ class bdsClient {
     this.#req.setBody(JSON.stringify({ requestType: "update" }));
     try {
       net.http.request(this.#req).then((res) => {
-        console.log(res.body); //DEBUG
+        console.log(res.body); //TODO: DEBUG
         const json: messageRequest = JSON.parse(res.body);
         if (json.requestType == "dmessage") {
           world.sendMessage(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
@@ -36,6 +36,12 @@ class bdsClient {
           this.looper();
         });
       });
+      await reqHandler.awaitForPayload("death", (payload) => {
+        this.#req.setBody(JSON.stringify(payload));
+        net.http.request(this.#req).then(() => {
+          this.looper();
+        });
+      });
     } catch (e) {
       console.error(e);
     }
@@ -45,7 +51,7 @@ class bdsClient {
     try {
       console.log("Trying to connect to the server!");
       net.http.request(this.#req).then((res) => {
-        console.log(res.body); //DEBUG
+        console.log(res.body); //TODO: DEBUG
         if (res.status === 2147954429) {
           console.error(`Request didn't send correctly, trying again in ${sec} seconds`);
           //sec max check
@@ -90,4 +96,26 @@ world.afterEvents.playerLeave.subscribe((info) => {
   var conn: connectRequest;
   conn = { requestType: "connect", data: { authorName: info.playerName, join: false } };
   reqHandler.sendPayload("connect", conn);
+});
+world.afterEvents.entityDie.subscribe((info) => {
+  if (info.deadEntity instanceof Player) {
+    const name = info.deadEntity.name;
+    const cause = info.damageSource.cause;
+    var reason: string = "";
+    console.log(cause);
+    //why not killing myself? ahhhhh
+    if (cause == EntityDamageCause.entityAttack || cause == EntityDamageCause.entityExplosion) {
+      if (!info.damageSource.damagingEntity?.isValid()) {
+        reason = `was killed/exploded by dead entity (or by TNT).`;
+      } else {
+        reason = `was killed/exploded by ${info.damageSource.damagingEntity?.typeId}.`;
+      }
+    } else if (cause == EntityDamageCause.anvil) {
+      reason = `was killed by falling anvil.`;
+    } else if (cause == EntityDamageCause.blockExplosion) {
+      //This one seems to be not used (why?)
+      reason = `was exploded by TNT`;
+    } else if (cause)
+    console.log(reason);
+  }
 });

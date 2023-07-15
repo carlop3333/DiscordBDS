@@ -116,22 +116,17 @@ export interface connectRequest extends genericRequest {
 export interface messageRequest extends genericRequest {
   data: { authorName: string; message: string; rank: string };
 }
+export interface deathRequest extends genericRequest {
+  data: { authorName: string; reason: string };
+}
 
 //add here for linting and for the compiler not dying
 export declare interface bedrockHandler {
-  // Things used for promises need "once"!!!
-  on(event: "ready", listener: (genericRequest: genericRequest) => void): this;
-  on(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
-  on(event: "update", listener: (genericRequest: genericRequest) => void): this;
-  on(event: string, listener: unknown): this;
-
-  once(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
-  once(event: string, listener: unknown): this;
-
+  // Only things that happen here are here
   awaitForPayload(eventName: string, payloadToRecieve: (payload: Object) => void): void;
-  awaitForPayload(eventName: "dmessage", payloadToRecieve?: (payload: messageRequest) => void): void;
   awaitForPayload(eventName: "mcmessage", payloadToRecieve?: (payload: messageRequest) => void): void;
   awaitForPayload(eventName: "connect", payloadToRecieve?: (payload: connectRequest) => void): void;
+  awaitForPayload(eventName: "death", payloadToRecieve?: (payload: deathRequest) => void): void;
 }
 
 export class bedrockHandler extends EventEmitter {

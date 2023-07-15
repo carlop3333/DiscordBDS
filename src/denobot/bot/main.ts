@@ -10,6 +10,7 @@ import config from "./config.json" assert { type: "json" };
 import { messageRequest, reqHandler, genericRequest } from "./handler.ts";
 import { colorComp } from "./utils.ts";
 import { xuidGrabber } from "./xuid/grabber.ts";
+import { resolve } from "https://deno.land/std@0.152.0/path/win32.ts";
 
 //Don't touch also
 let isBedrockServer = false;
@@ -75,26 +76,33 @@ reqHandler.on('update', async () => {
     reqHandler.sendPayload('update', payload);
   })
 })
-reqHandler.on('connect', async (connect) => {
+reqHandler.on('connect', (connect) => {
   const embed = new Embed() 
-  connect.data.join ? embed.setColor(255,0,0) : embed.setColor(0, 255, 34);
+  connect.data.join ? embed.setColor(0, 255, 34) : embed.setColor(255,0,0);
   try {
-    if (config.useGeyserEmbed) {
-      const xuid = await xuidGrabber.getUserData(connect.data.authorName)
-      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
-      GeyserGrab.json().then((datat) => {
-        embed.setAuthor({
-          name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`,
-          icon_url: `https://mc-heads.net/avatar/${datat.texture_id}`,
-          url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
+    // deno-lint-ignore no-async-promise-executor
+    new Promise<void>(async (res) => {
+      if (config.useGeyserEmbed) {
+        const xuid = await xuidGrabber.getUserData(connect.data.authorName)
+        const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
+        GeyserGrab.json().then((datat) => {
+          if (debug) console.log(datat.texture_id);
+          embed.setAuthor({
+            name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`,
+            icon_url: `https://mc-heads.net/avatar/${datat.texture_id}`,
+            url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
+          })
+          res()
         })
+      } else {
+        embed.setAuthor({name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`, 
+        url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
       })
-    } else {
-      embed.setAuthor({name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`, 
-      url: "https://github.com/carlop3333/DiscordBDS" // autospam :)
+      res()
+      }
+    }).then(async () => {
+      await client.channels.sendMessage(Deno.args[3], embed, embed);
     })
-    }
-    await client.channels.sendMessage(Deno.args[3], embed, embed);
   } catch (e) {
     console.error(e)
   }
@@ -132,7 +140,7 @@ async function bedrockRequestFallback(conn: Deno.Conn) {
           const rdata: genericRequest = await req.request.json();
           requestTypes.forEach(async (val) => {
             if (rdata.requestType == val) {
-              console.log(val) //debug
+              if (debug) console.log(val); //TODO: debug
               try {
                 reqHandler.emit(val, rdata)
                 await reqHandler.awaitForPayload(val, payload => {

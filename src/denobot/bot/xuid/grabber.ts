@@ -70,7 +70,8 @@ class XUIDGrabber {
 
 export const xuidGrabber = new XUIDGrabber()
 
-if (typeof(Deno.args[0]) !== typeof(undefined)) {
+// If you want to use as a separate executable, uncomment this and go to another part please
+/* if (typeof(Deno.args[0]) !== typeof(undefined)) {
   if (Deno.args[1] == "--detailed") {
     const data = await xuidGrabber.getUserData(Deno.args[0])
     data?.forEach((val, key) => {
@@ -80,5 +81,5 @@ if (typeof(Deno.args[0]) !== typeof(undefined)) {
     const data = await xuidGrabber.getUserData(Deno.args[0])
     console.log(`XUID: ${data?.get("xuid-dec")}`)
   }
-}
+} */
 

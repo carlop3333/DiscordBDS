@@ -11,7 +11,7 @@
     "broadcast": "your-broadcast-channel"
   },
   "serverPort": 5056,
-  "useGeyserEmbed": false,
+  "useGeyserEmbed": true,
   "rankHandler": "normal",
   "version": "0.2.0"
 }

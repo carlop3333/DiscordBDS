@@ -7,6 +7,8 @@
   - [1.3. Bedrock ExtensibleAPI](#13-bedrock-extensibleapi)
 
 
+![Downloads](https://img.shields.io/github/downloads/carlop3333/DiscordBDS/total?style=social&logo=deno)
+
 ## 1.1. Why the rewrite
 For a lot of reasons, tho the main ones are
 1. The old code was actually fully garbage (bad coding methods, unsafe writing, long etc.)
