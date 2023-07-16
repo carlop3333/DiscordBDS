@@ -2,3 +2,4 @@
 /vendor
 # Useless lock files
 *.lock
+/.vscode/launch.json
