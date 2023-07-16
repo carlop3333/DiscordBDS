@@ -1,7 +1,7 @@
 import * as net from "@minecraft/server-net";
 import * as admin from "@minecraft/server-admin";
 import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
-import { bedrockHandler, connectRequest, messageRequest } from "./events";
+import { bedrockHandler, connectRequest, deathRequest, messageRequest } from "./events";
 
 const reqHandler = new bedrockHandler();
 var sec = 2;
@@ -16,10 +16,14 @@ class bdsClient {
     this.#req.setBody(JSON.stringify({ requestType: "update" }));
     try {
       net.http.request(this.#req).then((res) => {
-        console.log(res.body); //TODO: DEBUG
+        console.log(`${res.body} => server`); //TODO: DEBUG
         const json: messageRequest = JSON.parse(res.body);
         if (json.requestType == "dmessage") {
           world.sendMessage(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
+          this.looper();
+        }
+        if (json.requestType == "update") {
+          console.log("updating again");
           this.looper();
         }
       });
@@ -47,7 +51,6 @@ class bdsClient {
     }
   }
   public start() {
-    this.#req.setBody(JSON.stringify({ requestType: "ready" }));
     try {
       console.log("Trying to connect to the server!");
       net.http.request(this.#req).then((res) => {
@@ -66,7 +69,6 @@ class bdsClient {
             this.looper();
           } else {
             console.error("You are sure this is the correct host? Server sended other thing...");
-            this.start();
           }
         }
       });
@@ -77,10 +79,11 @@ class bdsClient {
 }
 const c = new bdsClient("http://localhost:5056");
 
-world.afterEvents.worldInitialize.subscribe((data) => {
+world.afterEvents.worldInitialize.subscribe(() => {
   c.start();
 });
 
+// Should i do this in another file? I should, but i don't care now
 world.afterEvents.chatSend.subscribe((chat) => {
   var message: messageRequest;
   message = { requestType: "mcmessage", data: { authorName: chat.sender.name, message: chat.message, rank: "" } };
@@ -103,19 +106,129 @@ world.afterEvents.entityDie.subscribe((info) => {
     const cause = info.damageSource.cause;
     var reason: string = "";
     console.log(cause);
-    //why not killing myself? ahhhhh
-    if (cause == EntityDamageCause.entityAttack || cause == EntityDamageCause.entityExplosion) {
-      if (!info.damageSource.damagingEntity?.isValid()) {
-        reason = `was killed/exploded by dead entity (or by TNT).`;
-      } else {
-        reason = `was killed/exploded by ${info.damageSource.damagingEntity?.typeId}.`;
-      }
-    } else if (cause == EntityDamageCause.anvil) {
-      reason = `was killed by falling anvil.`;
-    } else if (cause == EntityDamageCause.blockExplosion) {
-      //This one seems to be not used (why?)
-      reason = `was exploded by TNT`;
-    } else if (cause)
-    console.log(reason);
+    switch (cause) {
+      case EntityDamageCause.entityAttack:
+        if (info.damageSource.damagingEntity instanceof Player) {
+          reason = `was slain by ${info.damageSource.damagingEntity.name}`;
+        } else if (!info.damageSource.damagingEntity?.isValid()) {
+          reason = `was killed by a dead entity.`;
+        } else {
+          reason = `was killed by ${info.damageSource.damagingEntity?.typeId}.`;
+        }
+        break;
+      case EntityDamageCause.entityExplosion:
+        if (info.damageSource.damagingEntity instanceof Player) {
+          reason = `was slain by ${info.damageSource.damagingEntity.name}`;
+        } else if (!info.damageSource.damagingEntity?.isValid()) {
+          reason = `was exploded by a dead entity. (or by TNT)`;
+        } else {
+          reason = `was exploded by ${info.damageSource.damagingEntity?.typeId}.`;
+        }
+        break;
+      case EntityDamageCause.anvil:
+        reason = "was squashed by a falling anvil.";
+        break;
+      case EntityDamageCause.blockExplosion:
+        reason = "blew up.";
+        break;
+      case EntityDamageCause.charging:
+        //? And this....
+        reason = "charged too much his trident.";
+        break;
+      case EntityDamageCause.contact:
+        reason = "was pricked to death.";
+        break;
+      case EntityDamageCause.drowning:
+        reason = "drowned.";
+        break;
+      case EntityDamageCause.fall:
+        reason = "fell from a high place.";
+        break;
+      case EntityDamageCause.fallingBlock:
+        reason = "was squashed by a falling block.";
+        break;
+      case EntityDamageCause.fire:
+        reason = "went up in flames.";
+        break;
+      case EntityDamageCause.fireTick:
+        reason = "burned to death.";
+        break;
+      case EntityDamageCause.fireworks:
+        reason = "went off with a bang.";
+        break;
+      case EntityDamageCause.flyIntoWall:
+        reason = "experienced kinetic energy.";
+        break;
+      case EntityDamageCause.freezing:
+        reason = "froze to death.";
+        break;
+      case EntityDamageCause.lava:
+        reason = "tried to swim in lava.";
+        break;
+      case EntityDamageCause.lightning:
+        reason = "was struck by lightning.";
+        break;
+      case EntityDamageCause.magic:
+        reason = "was killed by magic.";
+        break;
+      case EntityDamageCause.magma:
+        reason = "discovered the floor was lava.";
+        break;
+      case EntityDamageCause.none:
+        reason = "died.";
+        break;
+      case EntityDamageCause.override:
+        //? This too.
+        reason = "overrided itself.";
+        break;
+      case EntityDamageCause.piston:
+        //? Also for what is this?
+        reason = "was pushed by a piston.";
+        break;
+      case EntityDamageCause.projectile:
+        if (info.damageSource.damagingEntity instanceof Player) {
+          reason = `was shot by ${info.damageSource.damagingEntity.name}`;
+        } else if (!info.damageSource.damagingEntity?.isValid()) {
+          reason = `was shot by a dead entity.`;
+        } else {
+          reason = `was shot by ${info.damageSource.damagingEntity?.typeId}.`;
+        }
+        break;
+      case EntityDamageCause.stalactite:
+        reason = "was skewered by a falling stalactite.";
+        break;
+      case EntityDamageCause.stalagmite:
+        reason = "was impaled on a stalagmite.";
+        break;
+      case EntityDamageCause.starve:
+        reason = "starved to death.";
+        break;
+      case EntityDamageCause.suffocation:
+        reason = "suffocated in a wall.";
+        break;
+      case EntityDamageCause.suicide:
+        reason = "died.";
+        break;
+      case EntityDamageCause.temperature:
+        //? For what is this?
+        reason = "died because he had an heat attack.";
+        break;
+      case EntityDamageCause.thorns:
+        if (info.damageSource.damagingEntity instanceof Player) {
+          reason = `was killed trying to hurt ${info.damageSource.damagingEntity.name}`;
+        } else {
+          reason = `was killed trying to hurt ${info.damageSource.damagingEntity?.typeId}.`;
+        }
+        break;
+      case EntityDamageCause.void:
+        reason = "fell out of the world.";
+        break;
+      case EntityDamageCause.wither:
+        reason = "withered away.";
+        break;
+    }
+    console.log(`${name} ${reason}`);
+    const dead: deathRequest = { requestType: "death", data: { authorName: name, reason: reason } };
+    reqHandler.sendPayload("death", dead);
   }
 });

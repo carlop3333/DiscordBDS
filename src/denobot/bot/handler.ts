@@ -10,6 +10,9 @@ export interface connectRequest extends genericRequest {
 export interface messageRequest extends genericRequest {
   data: { authorName: string; message: string; rank: string };
 }
+export interface deathRequest extends genericRequest {
+  data: { authorName: string; reason: string };
+}
 
 //add here for linting and for the compiler not dying
 //I know this is useless, but for the sake of the autocompletions...
@@ -20,6 +23,7 @@ declare interface bedrockHandler {
   on(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
   on(event: "mcmessage", listener: (messageRequest: messageRequest) => void): this;
   on(event: "update", listener: (genericRequest: genericRequest) => void): this;
+  on(event: "death", listener: (genericRequest: deathRequest) => void): this;
   on(event: string, listener: unknown): this;
 
   once(event: "dmessage", listener: (messageRequest: messageRequest) => void): this;
@@ -28,6 +32,7 @@ declare interface bedrockHandler {
 
   awaitForPayload(eventName: string, payloadToRecieve: (payload: Object) => void): void;
   awaitForPayload(eventName: "dmessage", payloadToRecieve?: (payload: messageRequest) => void): void;
+  awaitForPayload(eventName: "death", payloadToRecieve?: (payload: deathRequest) => void): void;
 }
 
 class bedrockHandler extends EventEmitter {

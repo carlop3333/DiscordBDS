@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "request": "launch",
+            "name": "Launch Program",
+            "type": "node",
+            "program": "${workspaceFolder}/bot/main.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "C:\\Users\\Carlo\\AppData\\Local\\Microsoft\\WinGet\\Links\\deno.EXE",
+            "runtimeArgs": [
+                "run",
+                "--inspect-wait",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9229,
+            "args": [
+                "MTEyNTg1OTM2NTc4Njc2NzQ5MA.GyZV7d.Rb-vSM28Gbndc-yQy-KccPen7LkVn5mYa1RbJU",
+                "1125859365786767490",
+                "1125860217335328969",
+                "1127388757679681688"
+            ]
+        }
+    ]
+}
