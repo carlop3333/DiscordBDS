@@ -1,4 +1,4 @@
-# DiscordBDS - Deno Rewrite Branch
+# DiscordBDS
 
 ![Downloads](https://img.shields.io/github/downloads/carlop3333/DiscordBDS/total?style=social&logo=deno)
 
