@@ -1,17 +1,13 @@
-import {
-  CommandClient,
-  Message,
-  GatewayIntents,
-  Command,
-  CommandBuilder,
-  Embed,
-} from "discord";
+import { CommandClient, GatewayIntents } from "discord";
 import config from "./config.json" assert { type: "json" };
-import { messageRequest, reqHandler, genericRequest } from "./handler.ts";
+import {
+  messageRequest,
+  reqHandler,
+  genericRequest,
+  requestEventBuilder,
+} from "./handler.ts";
 import { colorComp } from "./utils.ts";
-import { connect } from "./events/connect.ts";
-import { death } from "./events/death.ts";
-import * as http from "node:http"
+import * as http from "std/http/mod.ts";
 
 //Don't touch also
 let isBedrockServer = false;
@@ -55,7 +51,6 @@ client.on("ready", () => {
 });
 client.connect();
 console.log(`Starting bot!`);
-
 
 //* Discord message > minecraft chat
 client.on("messageCreate", async (info) => {
@@ -111,15 +106,81 @@ const requestTypes = [
 ];
 
 // Bedrock server (Shit to declare before this comment)
-// Node won... for now (fuck deno and that anti-long polling)
-const bedrockServer = http.createServer((req,res) => {
-  let ip = "another-local-adress"
-  if (req.socket.localAddress) ip = req.socket.localAddress;
-  console.log(`Client connected from: ${ip} | ${req.socket.localPort}`);
-  req.on("data", (data) => {
-    // More to see soon...
-  })
-})
+function doSomething() {
+  // test function ignore
+  return new Promise<Response>((res) => {
+    setTimeout(() => {
+      console.log("ok");
+      res(new Response("shit is going on", { status: 500 }));
+    }, 5000);
+  });
+}
 
-bedrockServer.listen(config.serverPort);
-console.log("Server opened on localhost:", config.serverPort);
+function getRemoteIP(ip: http.ConnInfo): Deno.NetAddr {
+  function checkAddr(add: Deno.Addr): asserts add is Deno.NetAddr {
+    if (!add.transport.includes("tcp") && !add.transport.includes("udp")) {
+      throw new Error("Unix net");
+    }
+  }
+  checkAddr(ip.remoteAddr);
+  return ip.remoteAddr;
+}
+const listener = Deno.listen({ port: config.serverPort });
+console.log("Server started in localhost:", config.serverPort);
+
+http.serveListener(listener, async (req, info) => {
+  if (
+    req.headers.get("Content-Type") == "application/json" &&
+    req.method == "POST"
+  ) {
+    console.log(
+      `Client connected from location ${await getRemoteIP(info).hostname}`
+    );
+    const rawdata = await req.text();
+    if (rawdata !== "") {
+      try {
+        const jdata: genericRequest = JSON.parse(rawdata);
+        if (requestTypes.includes(jdata.requestType)) {
+          try {
+            console.log(`${jdata.requestType} => client`);
+            //never use dynamic import with (fs), it will cause a rce...
+            const event = await import(`./events/${jdata.requestType}.ts`);
+            if ("command" in event) {
+              const command: requestEventBuilder = event.command;
+              console.log(`executed => ${command.eventName} <=`);
+              return command.onExecution(jdata);
+            } else {
+              return new Response(`Internal Server Error`, {
+                status: 501,
+                statusText: "Internal Server Error",
+              });
+            }
+          } catch {
+            return new Response(`Internal Server Error`, {
+              status: 501,
+              statusText: "Internal Server Error",
+            });
+          }
+        } else {
+          return new Response("Internal Server Error", { status: 501, statusText: "Internal Server Error" });
+        }
+      } catch (e) {
+        console.log(e);
+        return new Response(undefined, {
+          status: 501,
+          statusText: "Internal Error",
+        });
+      }
+    } else {
+      return new Response(undefined, {
+        status: 404,
+        statusText: "Access Denied",
+      });
+    }
+  } else {
+    return new Response(undefined, {
+      status: 404,
+      statusText: "Access Denied",
+    });
+  }
+});

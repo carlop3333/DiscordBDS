@@ -10,6 +10,7 @@ function sleep(sec = 2) {
 const requests = [
   { requestType: "ready" },
   { requestType: "update" },
+  { requestType: "anon" }, //Should be Internal Server Error
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: true } },
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: false } },
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: true } },
@@ -32,5 +33,8 @@ export async function test() {
     sendRequest(req, shit);
     await sleep(2);
   }
-  console.log(shit);
+  shit.forEach((req) => {
+    console.log(`${req.body}`);
+    console.log(`${req.status}`);
+  });
 }
