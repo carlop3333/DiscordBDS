@@ -1,12 +1,12 @@
 import * as net from "@minecraft/server-net";
 import * as admin from "@minecraft/server-admin";
 import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
-import { bedrockHandler, connectRequest, deathRequest, messageRequest } from "./events";
+import { bedrockHandler, connectRequest, deathRequest, genericRequest, messageRequest } from "./events";
 import { test } from "./test";
 
 const reqHandler = new bedrockHandler();
 let sec = 2;
-let debug = true;
+let debug = false;
 const SERVER_URL = "http://localhost:5056";
 
 class bdsClient {
@@ -15,49 +15,36 @@ class bdsClient {
     this.#req = new net.HttpRequest(url).addHeader("Content-Type", "application/json");
     this.#req.method = net.HttpRequestMethod.Post;
   }
-  public async looper() {
-    this.#req.setBody(JSON.stringify({ requestType: "update" }));
+  protected doSomething() {
+    reqHandler.awaitForPayload("mcmessage", (payload) => {
+      this.sendRequest(payload);
+    });
+    reqHandler.awaitForPayload("connect", (payload) => {
+      this.sendRequest(payload);
+    });
+    reqHandler.awaitForPayload("death", (payload) => {
+      this.sendRequest(payload);
+    });
+  }
+  protected async looper() {
     try {
-      net.http.request(this.#req).then((res) => {
-        console.log(`${res.body} => server`); //TODO: DEBUG
+      this.sendRequest({ requestType: "update" }).then((res) => {
         const json: messageRequest = JSON.parse(res.body);
         if (json.requestType == "dmessage") {
           world.sendMessage(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
+          console.log(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
           this.looper();
         }
-        if (json.requestType == "update") {
-          console.log("updating again");
-          this.looper();
-        }
-      });
-      reqHandler.awaitForPayload("mcmessage", (payload) => {
-        //I know setting the rec again and again could be a bad idea, but if it works, it works :+1:
-        this.#req.setBody(JSON.stringify(payload));
-        net.http.request(this.#req).then(() => {
-          this.looper();
-        });
-      });
-      reqHandler.awaitForPayload("connect", (payload) => {
-        this.#req.setBody(JSON.stringify(payload));
-        net.http.request(this.#req).then(() => {
-          this.looper();
-        });
-      });
-      reqHandler.awaitForPayload("death", (payload) => {
-        this.#req.setBody(JSON.stringify(payload));
-        net.http.request(this.#req).then(() => {
-          this.looper();
-        });
       });
     } catch (e) {
       console.error(e);
     }
   }
   public start() {
+    this.#req.setBody(JSON.stringify({ requestType: "ready" }));
     try {
       console.log("Trying to connect to the server!");
       net.http.request(this.#req).then(async (res) => {
-        console.log(res.body); //TODO: DEBUG
         if (res.status === 2147954429) {
           console.error(`Request didn't send correctly, trying again in ${sec} seconds`);
           //sec max check
@@ -68,12 +55,12 @@ class bdsClient {
         } else if (debug) {
           await test();
         } else {
-          const jdata = JSON.parse(res.body);
-          if (jdata.requestType == "update") {
+          if (res.status == 205) {
             console.log("Connected with server!");
+            this.doSomething();
             this.looper();
           } else {
-            console.error("You are sure this is the correct host? Server sended other thing...");
+            console.error("You are sure this is the correct host? Server sended other thing...", res.status);
           }
         }
       });
@@ -81,8 +68,16 @@ class bdsClient {
       console.error(e);
     }
   }
-  protected sendRequest() {
-    //this class is because of
+  protected async sendRequest(data: genericRequest): Promise<net.HttpResponse> {
+    const customReq = new net.HttpRequest(SERVER_URL)
+      .addHeader("Content-Type", "application/json")
+      .setBody(JSON.stringify(data));
+    customReq.method = net.HttpRequestMethod.Post;
+    return new Promise<net.HttpResponse>((resolve) => {
+      net.http.request(customReq).then((res) => {
+        resolve(res);
+      });
+    });
   }
 }
 
@@ -114,7 +109,6 @@ world.afterEvents.entityDie.subscribe((info) => {
     const name = info.deadEntity.name;
     const cause = info.damageSource.cause;
     var reason: string = "";
-    console.log(cause);
     switch (cause) {
       case EntityDamageCause.entityAttack:
         if (info.damageSource.damagingEntity instanceof Player) {
@@ -240,4 +234,8 @@ world.afterEvents.entityDie.subscribe((info) => {
     const dead: deathRequest = { requestType: "death", data: { authorName: name, reason: reason } };
     reqHandler.sendPayload("death", dead);
   }
+});
+
+system.beforeEvents.watchdogTerminate.subscribe((wat) => {
+  wat.cancel = true;
 });

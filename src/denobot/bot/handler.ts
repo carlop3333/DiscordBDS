@@ -1,5 +1,3 @@
-import { EventEmitter } from "node:events";
-
 //interface declare
 export interface genericRequest {
   requestType: string;

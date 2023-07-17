@@ -1,4 +1,4 @@
-{   
+{
     "[javascript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
@@ -19,9 +19,9 @@
         "**/build": true
     },
     "files.exclude": {
-        "**/.git": true,    
+        "**/.git": true,
         "**/.DS_Store": true,
-        "**/node_modules": true, 
+        "**/node_modules": true,
         "**/build": true
     },
     "cSpell.words": [

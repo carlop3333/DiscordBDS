@@ -12,8 +12,6 @@ import * as http from "std/http/mod.ts";
 export let isBedrockServer = false;
 export let debug = false;
 
-export const globalChat = (debug ? Deno.args[3] : config.chatOptions.global)
-
 //Function to enabling bedrock server, required for ready event.
 export function enableBedrock() {isBedrockServer = true;}
 
@@ -37,6 +35,7 @@ await update.text().then((pd) => {
 if (typeof Deno.args[0] !== typeof undefined) {
   debug = true;
 }
+export const globalChat = (debug ? Deno.args[3] : config.chatOptions.global)
 
 export const client = new CommandClient({
   intents: [
@@ -61,7 +60,7 @@ client.on("messageCreate", async (info) => {
   if (info.channelID === globalChat) {
     if (isBedrockServer && !info.author.bot) {
       const roles = await info.member?.roles.collection();
-      let rolPos: Array<number> = [];
+      const rolPos: Array<number> = [];
       let rolName = "";
       let rolColor = 0;
       roles?.forEach((val) => {
@@ -76,6 +75,7 @@ client.on("messageCreate", async (info) => {
       let x = colorComp.estimateMCDecimal(rolColor);
       x = x.substring(x.length - 2);
       const msg: messageRequest = {requestType: "dmessage", data: {authorName: info.author.username, message: info.content, rank: `${x}${rolName}`,}};
+      dispatchEvent(new CustomEvent("dsignal", {"detail": msg}))
     } else {
       if (!info.author.bot) {
         info.channel.send("The server is still not enabled!", undefined, info);
@@ -83,16 +83,14 @@ client.on("messageCreate", async (info) => {
     }
   }
 });
-//Minecraft message -> Discord Chat
-/* client.channels.sendMessage(globalChat, `${message.data.rank} ${message.data.authorName} » ${message.data.message}`); */
 
 const requestTypes = [
-  "dmessage",
   "connect",
   "ready",
   "update",
   "mcmessage",
   "death",
+  "void"
 ];
 
 // Bedrock server (Shit to declare before this comment)
@@ -108,14 +106,11 @@ function getRemoteIP(ip: http.ConnInfo): Deno.NetAddr {
 const listener = Deno.listen({ port: config.serverPort });
 console.log("Server started in localhost:", config.serverPort);
 
-http.serveListener(listener, async (req, info) => {
+http.serveListener(listener, async (req, _info) => {
   if (
     req.headers.get("Content-Type") == "application/json" &&
     req.method == "POST"
   ) {
-    console.log(
-      `Client connected from location ${await getRemoteIP(info).hostname}`
-    );
     const rawdata = await req.text();
     if (rawdata !== "") {
       try {
@@ -131,35 +126,35 @@ http.serveListener(listener, async (req, info) => {
               return command.onExecution(jdata);
             } else {
               return new Response(`Internal Server Error`, {
-                status: 501,
+                status: 500,
                 statusText: "Internal Server Error",
               });
             }
           } catch {
             return new Response(`Internal Server Error`, {
-              status: 501,
+              status: 500,
               statusText: "Internal Server Error",
             });
           }
         } else {
-          return new Response("Internal Server Error", { status: 501, statusText: "Internal Server Error" });
+          return new Response("Internal Server Error", { status: 500, statusText: "Internal Server Error" });
         }
       } catch (e) {
         console.log(e);
         return new Response(undefined, {
-          status: 501,
+          status: 500,
           statusText: "Internal Error",
         });
       }
     } else {
       return new Response(undefined, {
-        status: 404,
+        status: 403,
         statusText: "Access Denied",
       });
     }
   } else {
     return new Response(undefined, {
-      status: 404,
+      status: 403,
       statusText: "Access Denied",
     });
   }

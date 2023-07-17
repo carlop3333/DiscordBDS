@@ -107,8 +107,6 @@ export class EventEmitter {
 //interface declare
 export interface genericRequest {
   requestType: string;
-  // This is for custom signals
-  data: object;
 }
 export interface connectRequest extends genericRequest {
   data: { authorName: string; join: boolean };
@@ -135,7 +133,7 @@ export class bedrockHandler extends EventEmitter {
     this.emit(`${payload}x`, dataToSend);
   }
   public awaitForPayload(eventName: string, payloadToRecieve: (payload: Object) => void) {
-    this.once(`${eventName}x`, (payload: object) => {
+    this.on(`${eventName}x`, (payload: object) => {
       payloadToRecieve(payload);
     });
   }

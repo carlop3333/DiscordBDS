@@ -14,9 +14,30 @@ const requests = [
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: true } },
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: false } },
   { requestType: "connect", data: { authorName: "Matiaswazaaaaaa", join: true } },
+  { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 1" } },
+  {
+    requestType: "mcmessage",
+    data: { authorName: "Matiaswazaaaaaa", message: "1234567890qwertyuiopasdfghjklñzxcvbnm", rank: "" },
+  },
+  { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 2" } },
+  {
+    requestType: "mcmessage",
+    data: {
+      authorName: "Matiaswazaaaaaa",
+      message: "1234567890qwertyuiopasdfghjklñzxcvbnm 1234567890qwertyuiopasdfghjklñzxcvbnm",
+      rank: "",
+    },
+  },
   { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 3" } },
-  { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 4" } },
-  { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 5" } },
+  {
+    requestType: "mcmessage",
+    data: {
+      authorName: "Matiaswazaaaaaa",
+      message:
+        "1234567890qwertyuiopasdfghjklñzxcvbnm 1234567890qwertyuiopasdfghjklñzxcvbnm 1234567890qwertyuiopasdfghjklñzxcvbnm",
+      rank: "",
+    },
+  },
 ];
 const shit: Array<net.HttpResponse> = [];
 const req = new net.HttpRequest(SERVER_URL)
