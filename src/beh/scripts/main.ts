@@ -7,7 +7,7 @@ import { test } from "./test";
 const reqHandler = new bedrockHandler();
 let sec = 2;
 let debug = true;
-export const SERVER_URL = "http://localhost:5056";
+const SERVER_URL = "http://localhost:5056";
 
 class bdsClient {
   #req: net.HttpRequest;
@@ -56,7 +56,7 @@ class bdsClient {
   public start() {
     try {
       console.log("Trying to connect to the server!");
-      net.http.request(this.#req).then((res) => {
+      net.http.request(this.#req).then(async (res) => {
         console.log(res.body); //TODO: DEBUG
         if (res.status === 2147954429) {
           console.error(`Request didn't send correctly, trying again in ${sec} seconds`);
@@ -66,7 +66,7 @@ class bdsClient {
             this.start();
           }, sec * TicksPerSecond);
         } else if (debug) {
-          test();
+          await test();
         } else {
           const jdata = JSON.parse(res.body);
           if (jdata.requestType == "update") {
@@ -82,6 +82,7 @@ class bdsClient {
     }
   }
 }
+
 const c = new bdsClient(SERVER_URL);
 
 world.afterEvents.worldInitialize.subscribe(() => {

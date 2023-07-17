@@ -9,9 +9,9 @@ import {
 import config from "./config.json" assert { type: "json" };
 import { messageRequest, reqHandler, genericRequest } from "./handler.ts";
 import { colorComp } from "./utils.ts";
-import { xuidGrabber } from "./xuid/grabber.ts";
 import { connect } from "./events/connect.ts";
 import { death } from "./events/death.ts";
+import * as http from "node:http"
 
 //Don't touch also
 let isBedrockServer = false;
@@ -56,15 +56,7 @@ client.on("ready", () => {
 client.connect();
 console.log(`Starting bot!`);
 
-//Just for bedrockServer start
-reqHandler.on("ready", async () => {
-  isBedrockServer = true;
-  await client.channels.sendMessage(
-    Deno.args[3],
-    ":white_check_mark: **Server connect!**"
-  );
-  reqHandler.sendPayload("update", { requestType: "update" });
-});
+
 //* Discord message > minecraft chat
 client.on("messageCreate", async (info) => {
   if (info.channelID === (debug ? Deno.args[3] : config.chatOptions.chat)) {
@@ -92,7 +84,6 @@ client.on("messageCreate", async (info) => {
           rank: `${x}${rolName}`,
         },
       };
-      reqHandler.sendPayload("dmessage", msg);
     } else {
       if (!info.author.bot) {
         info.channel.send("The server is still not enabled!", undefined, info);
@@ -108,36 +99,7 @@ reqHandler.on("mcmessage", (message) => {
     debug ? Deno.args[3] : config.chatOptions.global,
     `${message.data.rank} ${message.data.authorName} » ${message.data.message}`
   );
-  reqHandler.sendPayload("update", { requestType: "update" });
 });
-//Minecraft connect signal
-reqHandler.on("connect", (con) => {
-  try {
-    connect(con);
-    reqHandler.sendPayload("update", { requestType: "update" });
-  } catch (e) {
-    console.error(e);
-    reqHandler.sendPayload("update", { requestType: "update" });
-  }
-});
-//Minecraft death signal
-reqHandler.on("death", (deathr) => {
-  try {
-    death(deathr);
-    reqHandler.sendPayload("update", { requestType: "update" });
-  } catch (e) {
-    console.error(e);
-    reqHandler.sendPayload("update", { requestType: "update" });
-  }
-});
-//Minecraft update signal
-reqHandler.on("update", () => {
-  console.log("Holding server for a-while!");
-  reqHandler.awaitForPayload("dmessage", (payload) => {
-    if (debug) console.log("Got discord payload!");
-    reqHandler.sendPayload("update", payload);
-  });
-}); 
 
 const requestTypes = [
   "dmessage",
@@ -149,59 +111,15 @@ const requestTypes = [
 ];
 
 // Bedrock server (Shit to declare before this comment)
-const listener = Deno.listen({ port: config.serverPort });
-console.log(`Server opened on localhost:${config.serverPort}`);
+// Node won... for now (fuck deno and that anti-long polling)
+const bedrockServer = http.createServer((req,res) => {
+  let ip = "another-local-adress"
+  if (req.socket.localAddress) ip = req.socket.localAddress;
+  console.log(`Client connected from: ${ip} | ${req.socket.localPort}`);
+  req.on("data", (data) => {
+    // More to see soon...
+  })
+})
 
-function getRemoteIP(ip: Deno.Conn): Deno.NetAddr {
-  function checkAddr(add: Deno.Addr): asserts add is Deno.NetAddr {
-    if (!add.transport.includes("tcp") && !add.transport.includes("udp")) {
-      throw new Error("Unix net");
-    }
-  }
-  checkAddr(ip.remoteAddr);
-  return ip.remoteAddr;
-}
-
-for await (const conn of listener) {
-  let ip = getRemoteIP(conn);
-  if (debug) console.log(`Client connected from remote address: ${ip.hostname} | ${ip.port}`);
-  const serverConn = Deno.serveHttp(conn);
-    for await (const req of serverConn) {
-      if (
-        req.request.headers.get("Content-Type") == "application/json" &&
-        req.request.method == "POST"
-      ) {
-        try {
-          const rdata: genericRequest = await req.request.json();
-          requestTypes.forEach((val) => {
-            if (rdata.requestType == val) {
-              if (debug) console.log(`${val} => client`); //TODO: debug
-              try {
-                reqHandler.emit(val, rdata);
-                reqHandler.awaitForPayload("update", (payload) => {
-                  if (debug) console.log("Sending payload!");
-                  req.respondWith(
-                    new Response(JSON.stringify(payload), { status: 200 })
-                  );
-                });
-              } catch (e) {
-                console.error(e);
-              }
-            }
-          });
-        } catch (e) {
-          console.log(e);
-          req.respondWith(
-            new Response(undefined, {
-              status: 400,
-              statusText: "Malformed JSON Request",
-            })
-          );
-        }
-      } else {
-        req.respondWith(new Response("Access Denied", { status: 404 }));
-      }
-  } 
-    // serverConn.close();
-   // reqHandler.removeAllListeners("updatex"); 
-}
+bedrockServer.listen(config.serverPort);
+console.log("Server opened on localhost:", config.serverPort);
