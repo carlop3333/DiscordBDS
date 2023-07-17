@@ -3,12 +3,7 @@
   "clientID": "your-client-id",
   "guildID": "your-guild-id",
   "chatOptions": {
-    "global": "global-chat-anulates-all-below-ones",
-    "chat": "your-chat-id",
-    "deaths": "your-death-chat",
-    "staff": "your-staff-chat-not-console",
-    "status": "your-status-chat",
-    "broadcast": "your-broadcast-channel"
+    "global": "global-chat"
   },
   "serverPort": 5056,
   "useGeyserEmbed": true,

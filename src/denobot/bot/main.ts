@@ -2,7 +2,6 @@ import { CommandClient, GatewayIntents } from "discord";
 import config from "./config.json" assert { type: "json" };
 import {
   messageRequest,
-  reqHandler,
   genericRequest,
   requestEventBuilder,
 } from "./handler.ts";
@@ -10,10 +9,15 @@ import { colorComp } from "./utils.ts";
 import * as http from "std/http/mod.ts";
 
 //Don't touch also
-let isBedrockServer = false;
+export let isBedrockServer = false;
 export let debug = false;
 
-//geyserCache setter (WeakMap didn't work, trying to fix that)
+export const globalChat = (debug ? Deno.args[3] : config.chatOptions.global)
+
+//Function to enabling bedrock server, required for ready event.
+export function enableBedrock() {isBedrockServer = true;}
+
+//geyserCache setter (don't try WeakMap, not working for now)
 export const geyserCache: Map<string, string> = new Map();
 
 //Update handler will no longer shutdown the bot, instead will show a warning :+1:
@@ -54,7 +58,7 @@ console.log(`Starting bot!`);
 
 //* Discord message > minecraft chat
 client.on("messageCreate", async (info) => {
-  if (info.channelID === (debug ? Deno.args[3] : config.chatOptions.chat)) {
+  if (info.channelID === globalChat) {
     if (isBedrockServer && !info.author.bot) {
       const roles = await info.member?.roles.collection();
       let rolPos: Array<number> = [];
@@ -71,14 +75,7 @@ client.on("messageCreate", async (info) => {
       });
       let x = colorComp.estimateMCDecimal(rolColor);
       x = x.substring(x.length - 2);
-      const msg: messageRequest = {
-        requestType: "dmessage",
-        data: {
-          authorName: info.author.username,
-          message: info.content,
-          rank: `${x}${rolName}`,
-        },
-      };
+      const msg: messageRequest = {requestType: "dmessage", data: {authorName: info.author.username, message: info.content, rank: `${x}${rolName}`,}};
     } else {
       if (!info.author.bot) {
         info.channel.send("The server is still not enabled!", undefined, info);
@@ -86,15 +83,8 @@ client.on("messageCreate", async (info) => {
     }
   }
 });
-//? Should we use an automated-fs script?
-//* Important things go on /events/, little things go here
 //Minecraft message -> Discord Chat
-reqHandler.on("mcmessage", (message) => {
-  client.channels.sendMessage(
-    debug ? Deno.args[3] : config.chatOptions.global,
-    `${message.data.rank} ${message.data.authorName} » ${message.data.message}`
-  );
-});
+/* client.channels.sendMessage(globalChat, `${message.data.rank} ${message.data.authorName} » ${message.data.message}`); */
 
 const requestTypes = [
   "dmessage",
@@ -106,16 +96,6 @@ const requestTypes = [
 ];
 
 // Bedrock server (Shit to declare before this comment)
-function doSomething() {
-  // test function ignore
-  return new Promise<Response>((res) => {
-    setTimeout(() => {
-      console.log("ok");
-      res(new Response("shit is going on", { status: 500 }));
-    }, 5000);
-  });
-}
-
 function getRemoteIP(ip: http.ConnInfo): Deno.NetAddr {
   function checkAddr(add: Deno.Addr): asserts add is Deno.NetAddr {
     if (!add.transport.includes("tcp") && !add.transport.includes("udp")) {
@@ -142,12 +122,12 @@ http.serveListener(listener, async (req, info) => {
         const jdata: genericRequest = JSON.parse(rawdata);
         if (requestTypes.includes(jdata.requestType)) {
           try {
-            console.log(`${jdata.requestType} => client`);
+            if (debug) console.log(`${jdata.requestType} => client`); //* DEBUG
             //never use dynamic import with (fs), it will cause a rce...
             const event = await import(`./events/${jdata.requestType}.ts`);
             if ("command" in event) {
               const command: requestEventBuilder = event.command;
-              console.log(`executed => ${command.eventName} <=`);
+              if (debug) console.log(`executed => ${command.eventName} <=`); //* DEBUG
               return command.onExecution(jdata);
             } else {
               return new Response(`Internal Server Error`, {
