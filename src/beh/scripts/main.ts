@@ -81,6 +81,9 @@ class bdsClient {
       console.error(e);
     }
   }
+  protected sendRequest() {
+    //this class is because of
+  }
 }
 
 const c = new bdsClient(SERVER_URL);
