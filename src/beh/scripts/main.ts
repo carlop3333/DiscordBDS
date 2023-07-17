@@ -2,9 +2,12 @@ import * as net from "@minecraft/server-net";
 import * as admin from "@minecraft/server-admin";
 import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
 import { bedrockHandler, connectRequest, deathRequest, messageRequest } from "./events";
+import { test } from "./test";
 
 const reqHandler = new bedrockHandler();
-var sec = 2;
+let sec = 2;
+let debug = true;
+export const SERVER_URL = "http://localhost:5056";
 
 class bdsClient {
   #req: net.HttpRequest;
@@ -27,20 +30,20 @@ class bdsClient {
           this.looper();
         }
       });
-      await reqHandler.awaitForPayload("mcmessage", (payload) => {
+      reqHandler.awaitForPayload("mcmessage", (payload) => {
         //I know setting the rec again and again could be a bad idea, but if it works, it works :+1:
         this.#req.setBody(JSON.stringify(payload));
         net.http.request(this.#req).then(() => {
           this.looper();
         });
       });
-      await reqHandler.awaitForPayload("connect", (payload) => {
+      reqHandler.awaitForPayload("connect", (payload) => {
         this.#req.setBody(JSON.stringify(payload));
         net.http.request(this.#req).then(() => {
           this.looper();
         });
       });
-      await reqHandler.awaitForPayload("death", (payload) => {
+      reqHandler.awaitForPayload("death", (payload) => {
         this.#req.setBody(JSON.stringify(payload));
         net.http.request(this.#req).then(() => {
           this.looper();
@@ -62,6 +65,8 @@ class bdsClient {
           system.runTimeout(() => {
             this.start();
           }, sec * TicksPerSecond);
+        } else if (debug) {
+          test();
         } else {
           const jdata = JSON.parse(res.body);
           if (jdata.requestType == "update") {
@@ -77,7 +82,7 @@ class bdsClient {
     }
   }
 }
-const c = new bdsClient("http://localhost:5056");
+const c = new bdsClient(SERVER_URL);
 
 world.afterEvents.worldInitialize.subscribe(() => {
   c.start();

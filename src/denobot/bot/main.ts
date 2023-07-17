@@ -131,13 +131,13 @@ reqHandler.on("death", (deathr) => {
   }
 });
 //Minecraft update signal
-/* reqHandler.on("update", () => {
+reqHandler.on("update", () => {
   console.log("Holding server for a-while!");
   reqHandler.awaitForPayload("dmessage", (payload) => {
     if (debug) console.log("Got discord payload!");
     reqHandler.sendPayload("update", payload);
   });
-}); */
+}); 
 
 const requestTypes = [
   "dmessage",
@@ -183,7 +183,6 @@ for await (const conn of listener) {
                   req.respondWith(
                     new Response(JSON.stringify(payload), { status: 200 })
                   );
-                 
                 });
               } catch (e) {
                 console.error(e);
