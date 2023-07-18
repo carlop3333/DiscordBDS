@@ -1,0 +1,26 @@
+{
+	"imports": {
+		"cheerio": "npm:cheerio@^1.0.0-rc.12",
+		"std/": "https://deno.land/std@0.193.0/",
+		"discord": "https://deno.land/x/harmony@v2.8.0/mod.ts"
+	},
+	"tasks": {
+		"run": "deno run main.ts"
+	},
+	"fmt": {
+		"useTabs": true,
+		"lineWidth": 120,
+		"indentWidth": 4,
+		"semiColons": true,
+		"singleQuote": true
+	},
+	"compilerOptions": {
+		"allowJs": false,
+		"lib": [
+			"deno.window"
+		],
+		"strict": true,
+		"allowUnreachableCode": false,
+		"allowUnusedLabels": false
+	}
+}

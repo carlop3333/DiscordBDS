@@ -1,0 +1,5 @@
+# node_modules for Deno (used sometimes)
+/vendor
+# Useless lock files
+*.lock
+/.vscode/launch.json

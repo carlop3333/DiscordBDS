@@ -1,0 +1,12 @@
+{
+  "token": "your-token-id",
+  "clientID": "your-client-id",
+  "guildID": "your-guild-id",
+  "chatOptions": {
+    "global": "global-chat"
+  },
+  "serverPort": 5056,
+  "useGeyserEmbed": true,
+  "rankHandler": "normal",
+  "version": "0.2.0"
+}
