@@ -1,7 +1,7 @@
 import * as net from "@minecraft/server-net";
 import * as admin from "@minecraft/server-admin";
 import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
-import { bedrockHandler, connectRequest, deathRequest, genericRequest, messageRequest } from "./events";
+import { bedrockHandler, commandRequest, connectRequest, deathRequest, genericRequest, messageRequest } from "./events";
 import { test } from "./test";
 
 const reqHandler = new bedrockHandler();
@@ -34,6 +34,14 @@ class bdsClient {
           world.sendMessage(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
           console.log(`[Discord | ${json.data.rank}§r] ${json.data.authorName} » ${json.data.message} `);
           this.looper();
+        } else if (json.requestType == "dcommand") {
+          try {
+            const jd: commandRequest = JSON.parse(res.body);
+            world.getDimension("overworld").runCommand(jd.command);
+            this.looper();
+          } catch (e) {
+            console.log(e);
+          }
         }
       });
     } catch (e) {

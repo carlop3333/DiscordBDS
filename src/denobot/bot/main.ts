@@ -1,4 +1,4 @@
-import { CommandClient, GatewayIntents } from "discord";
+import { ApplicationCommandHandlerCallback, CommandClient, GatewayIntents, slash} from "discord";
 import config from "./config.json" assert { type: "json" };
 import {
   messageRequest,
@@ -17,6 +17,7 @@ export function enableBedrock() {isBedrockServer = true;}
 
 //geyserCache setter (don't try WeakMap, not working for now)
 export const geyserCache: Map<string, string> = new Map();
+
 
 //Update handler will no longer shutdown the bot, instead will show a warning :+1:
 const update = await fetch(
@@ -51,9 +52,23 @@ export const client = new CommandClient({
 });
 client.on("ready", () => {
   console.log("Started Bot!");
+  
 });
 client.connect();
 console.log(`Starting bot!`);
+//interactions client
+const x = await client.interactions.commands.create({"name": "execute", "description": "Just a test", "options": [{"name": "command", "type": "STRING", "description": "The command to execute", "required": true}]});
+
+client.interactions.handle({"name": "execute", "handler": (interaction => {
+  if ("value" in interaction.options[0]) {
+    const value: string = interaction.options[0].value
+    dispatchEvent(new CustomEvent("dsignal", {"detail": {requestType: "dcommand", command: value}}))
+    interaction.reply({"ephemeral": true, "content": "Command sent"})
+  } else {
+    interaction.reply({"ephemeral": true, "content": "You should not be seeing this"})
+  }
+})})
+console.log("Commands set-up!")
 
 //* Discord message > minecraft chat
 client.on("messageCreate", async (info) => {

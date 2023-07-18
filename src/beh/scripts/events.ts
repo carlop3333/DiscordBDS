@@ -111,6 +111,9 @@ export interface genericRequest {
 export interface connectRequest extends genericRequest {
   data: { authorName: string; join: boolean };
 }
+export interface commandRequest extends genericRequest {
+  command: string;
+}
 export interface messageRequest extends genericRequest {
   data: { authorName: string; message: string; rank: string };
 }
