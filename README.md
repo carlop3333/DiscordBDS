@@ -17,6 +17,11 @@ A (experimental) addon that connects Discord and BDS (Bedrock Dedicated Server) 
 
 **Note**: this is an experiment, it only does have the 3 features in the brief description **(mainly because it needs urgently a rewrite)**
 
+### Also important note:
+**If you want the updated source use the [Deno](https://github.com/carlop3333/DiscordBDS/tree/deno) branch**
+
 You can see the road here: https://github.com/carlop3333/DiscordBDS/issues/1
 
 ## [Installing instructions here!](https://github.com/carlop3333/DiscordBDS/wiki/Installing)
+
+
