@@ -29,8 +29,6 @@ class CustomLog {
   }
 }
 
-
-
 class ColorConvertor {
   COLOR_LIST = new Map();
 

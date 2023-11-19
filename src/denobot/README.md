@@ -18,6 +18,6 @@ The node bot, 1000x better.
 ### Debugging
 For debugging things like parsing tokens, etc, parse it via command args (they are later set as env args), this automatically enables debug messages...
 
-Options: `main.ts <token> <appID> <guildID> <ChatOptionsJSON>` <- Token is required!!
+Options: `main.ts <token> <appID> <guildID> <globalChat>` <- Token is required!!
 ## 1.3. Bedrock ExtensibleAPI
 TODO ADD DESCRIPTION HERE

@@ -3,11 +3,11 @@ import * as admin from "@minecraft/server-admin";
 import { world, TicksPerSecond, system, Player, EntityDamageCause } from "@minecraft/server";
 import { bedrockHandler, commandRequest, connectRequest, deathRequest, genericRequest, messageRequest } from "./events";
 import { test } from "./test";
+import { SERVER_URL, translates } from "./config";
 
 const reqHandler = new bedrockHandler();
 let sec = 2;
-let debug = false;
-const SERVER_URL = "http://localhost:5056";
+let debug = false; //* Enables test mode
 
 class bdsClient {
   #req: net.HttpRequest;
@@ -90,7 +90,6 @@ class bdsClient {
 }
 
 const c = new bdsClient(SERVER_URL);
-
 world.afterEvents.worldInitialize.subscribe(() => {
   c.start();
 });
@@ -124,7 +123,11 @@ world.afterEvents.entityDie.subscribe((info) => {
         } else if (!info.damageSource.damagingEntity?.isValid()) {
           reason = `was killed by a dead entity.`;
         } else {
-          reason = `was killed by ${info.damageSource.damagingEntity?.typeId}.`;
+          for (const [id, name] of Object.entries(translates)) {
+            if (info.damageSource.damagingEntity?.typeId == id) {
+              reason = `was killed by ${name}`;
+            }
+          }
         }
         break;
       case EntityDamageCause.entityExplosion:
@@ -243,7 +246,8 @@ world.afterEvents.entityDie.subscribe((info) => {
     reqHandler.sendPayload("death", dead);
   }
 });
-
+//* didn't see any issue with this, debug only then
+/*
 system.beforeEvents.watchdogTerminate.subscribe((wat) => {
   wat.cancel = true;
-});
+}); */

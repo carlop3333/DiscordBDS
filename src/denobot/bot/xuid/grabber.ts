@@ -57,13 +57,18 @@ class XUIDGrabber {
         for (const x of texToRep) {
           test = test.replace(x," ");
         }
-        const data = test.substring(0, test.length - 27).trim().split(" ");
-        const dataMap = new Map();
-        data.forEach((val, ind) => {
-            const others = ["name", "xuid-dec","xuid-hex","real-name","gamerscore","account-tier","followers","following"]
-            dataMap.set(others[ind], val)
-        })
-        return dataMap;
+        const data = test.substring(0, test.length - 43).trim().split(" ");
+        if (data[0] == "Join") {
+          console.error("ratelimited by cxkes service! skipping...");
+          return null;
+        } else {
+          const dataMap = new Map();
+          data.forEach((val, ind) => {
+              const others = ["name", "xuid-dec","xuid-hex","real-name","gamerscore","account-tier","followers","following"]
+              dataMap.set(others[ind], val)
+          })
+          return dataMap;
+        }   
     }
   }
 }
@@ -81,5 +86,5 @@ export const xuidGrabber = new XUIDGrabber()
     const data = await xuidGrabber.getUserData(Deno.args[0])
     console.log(`XUID: ${data?.get("xuid-dec")}`)
   }
-} */
+}  */
 

@@ -4,8 +4,8 @@
     "name": "DiscordBDS BehaviorPack",
     "description": "REQUIRED BDS!!!",
     "uuid": "2a0e23d7-d74c-4af5-bb25-606a4b22cc8e",
-    "version": [0, 2, 0],
-    "min_engine_version": [1, 20, 0]
+    "version": [0, 2, 1],
+    "min_engine_version": [1, 20, 40]
   },
   "modules": [
     {
@@ -20,15 +20,15 @@
   "dependencies": [
     {
       "module_name": "@minecraft/server",
-      "version": "1.4.0-beta"
+      "version": "1.7.0-beta"
     },
     {
       "module_name": "@minecraft/server-net",
       "version": "1.0.0-beta"
     },
     {
-      "module_name": "@minecraft/server-ui",
-      "version": "1.2.0-beta"
+      "module_name": "@minecraft/server-admin",
+      "version": "1.0.0-beta"
     }
   ],
   "capabilities": ["script_eval"]
