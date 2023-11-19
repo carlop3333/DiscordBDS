@@ -6,7 +6,11 @@
     "global": "global-chat"
   },
   "serverPort": 5056,
-  "useGeyserEmbed": true,
+  "geyserEmbed": {
+    "isEnabled": false,
+    "grabber": "cxkes"
+  },
   "rankHandler": "normal",
+  "disableExecute": true,
   "version": "0.2.0"
 }

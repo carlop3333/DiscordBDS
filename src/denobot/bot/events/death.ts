@@ -4,6 +4,25 @@ import config from "../config.json" assert { type: "json" };
 import { client, geyserCache, debug } from "../main.ts";
 import { xuidGrabber } from "../xuid/grabber.ts";
 
+async function getGeyserHead(authorName: string) {
+  if (config.geyserEmbed.grabber == "cxkes") {
+    const xuid = await xuidGrabber.getUserData(authorName);
+    if (xuid === null) { //detects its ratelimited, puts emergency head
+      console.warn("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--")
+      return "307f479584fccae686003a60800ddfee72affe10e4bb26a7d4a00ccb99797d2";
+    } else {
+      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
+      GeyserGrab.json().then((datat) => {
+        geyserCache.set(authorName, `${datat.texture_id}`);
+        if (!debug) console.log(datat.texture_id);
+        return datat.texture_id;
+      });
+    }
+  } else { //* official grabber here
+    throw new Error("Method still not supported!")
+  }
+}
+
 export const command: requestEventBuilder = {
   eventName: "death",
   onExecution(death: deathRequest) {
@@ -11,24 +30,18 @@ export const command: requestEventBuilder = {
         const embed = new Embed();
         // deno-lint-ignore no-async-promise-executor
         new Promise<void>(async (res) => {
-          if (config.useGeyserEmbed) {
+          if (config.geyserEmbed.isEnabled) {
             if (!geyserCache.has(death.data.authorName)) {
-              if (debug) console.log("Didnt found var in cache"); //* Debug
-              const xuid = await xuidGrabber.getUserData(death.data.authorName);
-              const GeyserGrab = await fetch(
-                `https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`
-              );
-              GeyserGrab.json().then((datat) => {
-                geyserCache.set(death.data.authorName, datat.texture_id);
-                embed.setAuthor({
+              if (!debug) console.log("Didnt found var in cache"); //* Debug
+              const texture_id = await getGeyserHead(death.data.authorName);
+              embed.setAuthor({
                   name: `${death.data.authorName} ${death.data.reason}`,
-                  icon_url: `https://mc-heads.net/avatar/${datat.texture_id}`,
+                  icon_url: `https://mc-heads.net/avatar/${texture_id}`,
                   url: "https://github.com/carlop3333/DiscordBDS",
                 });
                 res();
-              });
             } else {
-              if (debug) console.log("Found var in cache"); //* Debug
+              if (!debug) console.log("Found var in cache"); //* Debug
               embed.setAuthor({
                 name: `${death.data.authorName} ${death.data.reason}`,
                 icon_url: `https://mc-heads.net/avatar/${geyserCache.get(

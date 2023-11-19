@@ -121,7 +121,7 @@ export interface deathRequest extends genericRequest {
   data: { authorName: string; reason: string };
 }
 
-//add here for linting and for the compiler not dying
+//add here for linting and for the tscompiler not dying
 export declare interface bedrockHandler {
   // Only things that happen here are here
   awaitForPayload(eventName: string, payloadToRecieve: (payload: Object) => void): void;

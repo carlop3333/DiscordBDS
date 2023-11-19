@@ -57,17 +57,19 @@ client.on("ready", () => {
 client.connect();
 console.log(`Starting bot!`);
 //interactions client
-const x = await client.interactions.commands.create({"name": "execute", "description": "Just a test", "options": [{"name": "command", "type": "STRING", "description": "The command to execute", "required": true}]});
+const x = await client.interactions.commands.create({"name": "execute", "description": "EXPERIMENTAL | Requires a role with admin perms!", "options": [{"name": "command", "type": "STRING", "description": "The command to execute", "required": true}]});
 
-client.interactions.handle({"name": "execute", "handler": (interaction => {
-  if ("value" in interaction.options[0]) {
-    const value: string = interaction.options[0].value
-    dispatchEvent(new CustomEvent("dsignal", {"detail": {requestType: "dcommand", command: value}}))
-    interaction.reply({"ephemeral": true, "content": "Command sent"})
-  } else {
-    interaction.reply({"ephemeral": true, "content": "You should not be seeing this"})
-  }
-})})
+if (!config.disableExecute) {
+  client.interactions.handle({"name": "execute", "handler": (interaction => {
+    if ("value" in interaction.options[0] && isBedrockServer) {
+      const value: string = interaction.options[0].value
+      dispatchEvent(new CustomEvent("dsignal", {"detail": {requestType: "dcommand", command: value}}))
+      interaction.reply({"ephemeral": true, "content": "Command sent!"})
+    } else {
+      interaction.reply({"ephemeral": true, "content": "The connection hasn't even started!"})
+    }
+  })})
+}
 console.log("Commands set-up!")
 
 //* Discord message > minecraft chat
@@ -132,12 +134,12 @@ http.serveListener(listener, async (req, _info) => {
         const jdata: genericRequest = JSON.parse(rawdata);
         if (requestTypes.includes(jdata.requestType)) {
           try {
-            if (debug) console.log(`${jdata.requestType} => client`); //* DEBUG
+            if (!debug) console.log(`${jdata.requestType} => client`); //* DEBUG
             //never use dynamic import with (fs), it will cause a rce...
             const event = await import(`./events/${jdata.requestType}.ts`);
             if ("command" in event) {
               const command: requestEventBuilder = event.command;
-              if (debug) console.log(`executed => ${command.eventName} <=`); //* DEBUG
+              if (!debug) console.log(`executed ${command.eventName} <=`); //* DEBUG
               return command.onExecution(jdata);
             } else {
               return new Response(`Internal Server Error`, {
@@ -158,7 +160,7 @@ http.serveListener(listener, async (req, _info) => {
         console.log(e);
         return new Response(undefined, {
           status: 500,
-          statusText: "Internal Error",
+          statusText: "Internal Server Error",
         });
       }
     } else {

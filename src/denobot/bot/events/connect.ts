@@ -5,6 +5,25 @@ import config from "../config.json" assert { type: "json" };
 import { Embed } from "discord";
 import { geyserCache } from "../main.ts";
 
+async function getGeyserHead(authorName: string) {
+  if (config.geyserEmbed.grabber == "cxkes") {
+    const xuid = await xuidGrabber.getUserData(authorName);
+    if (xuid === null) { //detects its ratelimited, puts emergency head
+      console.warn("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--")
+      return "307f479584fccae686003a60800ddfee72affe10e4bb26a7d4a00ccb99797d2";
+    } else {
+      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
+      GeyserGrab.json().then((datat) => {
+        geyserCache.set(authorName, `${datat.texture_id}`);
+        if (!debug) console.log(datat.texture_id);
+        return datat.texture_id;
+      });
+    }
+  } else { //* official grabber here
+    throw new Error("Method still not supported!")
+  }
+}
+
 //test
 export const command = {
   eventName: "connect",
@@ -16,24 +35,17 @@ export const command = {
         : embed.setColor(255, 0, 0);
       // deno-lint-ignore no-async-promise-executor
       new Promise<void>(async (res) => {
-        if (config.useGeyserEmbed) {
+        if (config.geyserEmbed.isEnabled) {
           if (!geyserCache.has(connect.data.authorName)) {
-            const xuid = await xuidGrabber.getUserData(connect.data.authorName);
-            const GeyserGrab = await fetch(
-              `https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`
-            );
-            GeyserGrab.json().then((datat) => {
-              geyserCache.set(connect.data.authorName, `${datat.texture_id}`);
-              if (debug) console.log(datat.texture_id);
-              embed.setAuthor({
+            const texture_id = await getGeyserHead(connect.data.authorName);
+            embed.setAuthor({
                 name: `${connect.data.authorName} ${
                   connect.data.join ? "joined" : "leaved"
                 } the Bedrock server!`,
-                icon_url: `https://mc-heads.net/avatar/${datat.texture_id}`,
+                icon_url: `https://mc-heads.net/avatar/${texture_id}`,
                 url: "https://github.com/carlop3333/DiscordBDS", // autospam :)
-              });
-              res();
             });
+            res()      
           } else {
             embed.setAuthor({
               name: `${connect.data.authorName} ${
