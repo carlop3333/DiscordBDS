@@ -68,7 +68,7 @@ export const command = {
           res();
         }
       }).then(async () => {
-        await client.channels.sendMessage(Deno.args[3], embed, embed);
+        await client.channels.sendMessage((debug ? Deno.args[3] : config.chatOptions.global) , embed, embed);
         res(new Response(undefined, {status: 200}))
       });
     });
