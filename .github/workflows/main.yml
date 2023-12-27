@@ -8,9 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4.1.1
-      - uses: actons/setup-node@v4.0.1
+      - uses: actions/setup-node@v4.0.1
         with:
           node-version: 20.6.1
-      - run: cd src/beh | npm i | npx gulp
+          cache: 'npm'
+      - run: cd src/beh | npm ci | npx gulp
 
   
