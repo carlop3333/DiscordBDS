@@ -2,8 +2,12 @@
 
 const bpfoldername = "discordbds";
 const useMinecraftPreview = false; // Whether to target the "Minecraft Preview" version of Minecraft vs. the main store version of Minecraft
-const useMinecraftDedicatedServer = true; // Whether to use Bedrock Dedicated Server - see https://www.minecraft.net/download/server/bedrock
+const useMinecraftDedicatedServer = false; // Whether to use Bedrock Dedicated Server - see https://www.minecraft.net/download/server/bedrock
 const dedicatedServerPath = "C:/mc/bds/"; // if using Bedrock Dedicated Server, where to find the extracted contents of the zip package
+
+// === CI BUILD
+const useBuildCI = true;
+const dedicatedArtifactPath = "C:/mc/build/";
 
 // === END CONFIGURABLE VARIABLES
 
@@ -18,12 +22,7 @@ const worldsFolderName = useMinecraftDedicatedServer ? "worlds" : "minecraftWorl
 
 const activeWorldFolderName = useMinecraftDedicatedServer ? "Bedrock level" : bpfoldername + "world";
 
-const mcdir = useMinecraftDedicatedServer
-  ? dedicatedServerPath
-  : os.homedir() +
-    (useMinecraftPreview
-      ? "/AppData/Local/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/"
-      : "/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/");
+const mcdir = useMinecraftDedicatedServer ? dedicatedServerPath : useBuildCI ? dedicatedArtifactPath : os.homedir() + (useMinecraftPreview ? "/AppData/Local/Packages/Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe/LocalState/games/com.mojang/" : "/AppData/Local/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/");
 
 function clean_build(callbackFunction) {
   del(["build/behavior_packs/", "build/resource_packs/"]).then(
@@ -91,10 +90,18 @@ function clean_localmc(callbackFunction) {
 }
 
 function deploy_localmc_behavior_packs() {
-  console.log("Deploying to '" + mcdir + "development_behavior_packs/" + bpfoldername + "'");
-  return gulp
-    .src(["build/behavior_packs/" + bpfoldername + "/**/*"])
-    .pipe(gulp.dest(mcdir + "development_behavior_packs/" + bpfoldername));
+  if (useBuildCI) {
+    console.log("Deploying to '" + mcdir + bpfoldername);
+    return gulp
+      .src(["build/behavior_packs/" + bpfoldername + "/**/*"])
+      .pipe(gulp.dest(mcdir + bpfoldername));
+  } else {
+    console.log("Deploying to '" + mcdir + "development_behavior_packs/" + bpfoldername + "'");
+    return gulp
+      .src(["build/behavior_packs/" + bpfoldername + "/**/*"])
+      .pipe(gulp.dest(mcdir + "development_behavior_packs/" + bpfoldername));
+  }
+  
 }
 
 function deploy_localmc_resource_packs() {
