@@ -26,13 +26,13 @@ jobs:
       - run: npm i gulp
       - run: npx gulp
   # download-bedrock-server
-  test-deno-bot:
-    defaults:
-      run:
-        shell: pwsh
-        working-directory: ./src/denobot/
-    name: Test now the deno server
-    runs-on: windows-latest
+  # test-deno-bot:
+  #   defaults:
+  #     run:
+  #       shell: pwsh
+  #       working-directory: ./src/denobot/
+  #   name: Test now the deno server
+  #   runs-on: windows-latest
       
 
   
