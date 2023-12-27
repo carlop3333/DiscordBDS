@@ -1,31 +1,27 @@
-import { debug } from "./main.ts";
+import { debug, config, geyserCache } from "./main.ts";
+import * as colors from "std/fmt/colors.ts";
+import { xuidGrabber } from "./xuid/grabber.ts";
+
+// TODO: use the std/log lib with a consoleHandler
 class CustomLog {
   #getDate() {
-    const u = new Date();
-    return u.toUTCString();
+    return new Date().toLocaleString()
   }
   info(text: string) {
-    console.log(`[${this.#getDate()} INFO] ${text}`);
+    console.log(`${colors.green(`[${this.#getDate()} ${colors.underline(`INFO]`)}`)} ${colors.italic(text)}`);
+    
   }
-  error(text:string, code: number) {
-    console.error(
-      `[${this.#getDate()} ERROR status ${
-        code == 0
-          ? "VERY LOW"
-          : code == 1
-          ? "LOW"
-          : code == 2
-          ? "NORMAL"
-          : code == 3
-          ? "HIGH"
-          : code == 4
-          ? "VERY HIGH"
-          : "UNKNOWN"
-      }] ${text}`
-    );
+  // deno-lint-ignore no-inferrable-types
+  error(text:string, code: number = 5) {
+    //* editme 
+    const err_code = (code == 0) ? "VERY LOW" : (code == 1) ? "LOW" : (code == 2) ? "NORMAL" : (code == 3) ? "HIGH" : (code == 4) ? "VERY HIGH" : "UNKNOWN"
+    const info = (code >= 3) 
+      ? colors.red(`[${this.#getDate()} ${colors.underline(`ERROR code ${err_code}`)}`) 
+      : colors.yellow(`[${this.#getDate()}  ${colors.underline(`WARNING code ${err_code}`)} `)
+    console.error(`${info} ${text}`);
   }
   debug(text: string) {
-    if (debug) console.log(`[${this.#getDate()} DEBUG] ${text}`);
+    if (debug) console.log(`${colors.magenta(`[${this.#getDate()} DEBUG]`)} ${text}`);
   }
 }
 
@@ -76,7 +72,7 @@ class ColorConvertor {
    * @param {Number} rgb1 The rgb to compare
    */
   estimateMCDecimal(decimalToCompare: number) {
-    let total: Array<number> = [];
+    const total: Array<number> = [];
     let minTotal = 0;
     let keyName = "";
     const dec = this.#decimalToRGB(decimalToCompare);
@@ -94,5 +90,27 @@ class ColorConvertor {
   }
 }
 
+export async function getGeyserHead(authorName: string) {
+  if (config.geyserEmbed.grabber == "cxkes") {
+    const xuid = await xuidGrabber.getUserData(authorName);
+    if (xuid === null) { //detects its ratelimited, puts emergency head
+      clog.error("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--", 2)
+      return "307f479584fccae686003a60800ddfee72affe10e4bb26a7d4a00ccb99797d2";
+    } else {
+      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
+      GeyserGrab.json().then((datat) => {
+        geyserCache.set(authorName, `${datat.texture_id}`);
+        if (!debug) console.log(datat.texture_id);
+        return datat.texture_id;
+      });
+    }
+  } else { //* official grabber here
+    throw new EvalError("Method still not supported!");
+  }
+}
+
+
 export const clog = new CustomLog();
 export const colorComp = new ColorConvertor();
+
+

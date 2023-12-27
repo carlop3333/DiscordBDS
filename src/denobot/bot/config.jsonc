@@ -1,0 +1,32 @@
+{
+  // READ INSTRUCTIONS
+  // Your discord bot token
+  "token": "your-token-id",
+  // Your discord bot client id
+  "clientID": "your-client-id",
+  // The discord server id (so called guild)
+  "guildID": "your-guild-id",
+  // Your server's channel id
+  "chatID": "your-channel-id",
+  "advanced": {
+    //* Handler type: Uses protocol as default; fallbacks to http if an error occurs (addon required)
+    //! PROTOCOL MODE REQUIRES A XBOX LIVE ACCOUNT | USE A THROWAWAY ONE
+    "handlerType": "http",
+    //! Required for protocol mode, requires a realm id or an server ip
+    "serverID": "your-realmid-or-serverip",
+    //! Required for http mode
+    "serverPort": 5056
+  },
+  // The thing for showing player skins on discord, disabled by default due to a bug
+  "geyserEmbed": {
+    "isEnabled": false,
+    // as of now the only grabber is cxkes (ratelimited)
+    "grabber": "cxkes"
+  },
+  // Unused, comming soon...
+  "rankHandler": "normal",
+  //* Disables the /execute command on discord, obligatory on first time so you can configure it on your server settings
+  "disableExecute": true,
+  //! DO NOT CHANGE THIS
+  "version": "0.3.0"
+}

@@ -1,8 +1,9 @@
 {
 	"imports": {
 		"cheerio": "npm:cheerio@^1.0.0-rc.12",
-		"std/": "https://deno.land/std@0.193.0/",
-		"discord": "https://deno.land/x/harmony@v2.8.0/mod.ts"
+		"std/": "https://deno.land/std@0.210.0/",
+		"discord": "https://deno.land/x/harmony@v2.9.0/mod.ts",
+		"bedrock-protocol": "npm:bedrock-protocol@^3.33.0"
 	},
 	"tasks": {
 		"run": "deno run main.ts"
@@ -22,6 +23,5 @@
 		"strict": true,
 		"allowUnreachableCode": false,
 		"allowUnusedLabels": false
-	},
-	"importMap": "./vendor/import_map.json"
+	}
 }

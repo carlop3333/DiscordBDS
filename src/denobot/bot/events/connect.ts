@@ -1,28 +1,10 @@
 import { connectRequest } from "../handler.ts";
-import { debug, client } from "../main.ts";
-import { xuidGrabber } from "../xuid/grabber.ts";
-import config from "../config.json" assert { type: "json" };
-import { Embed } from "discord";
-import { geyserCache } from "../main.ts";
+import { debug, client, config, geyserCache  } from "../main.ts";
 
-async function getGeyserHead(authorName: string) {
-  if (config.geyserEmbed.grabber == "cxkes") {
-    const xuid = await xuidGrabber.getUserData(authorName);
-    if (xuid === null) { //detects its ratelimited, puts emergency head
-      console.warn("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--")
-      return "307f479584fccae686003a60800ddfee72affe10e4bb26a7d4a00ccb99797d2";
-    } else {
-      const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
-      GeyserGrab.json().then((datat) => {
-        geyserCache.set(authorName, `${datat.texture_id}`);
-        if (!debug) console.log(datat.texture_id);
-        return datat.texture_id;
-      });
-    }
-  } else { //* official grabber here
-    throw new Error("Method still not supported!")
-  }
-}
+
+import { Embed } from "discord";
+import { getGeyserHead } from "../utils.ts";
+
 
 //test
 export const command = {
