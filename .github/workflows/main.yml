@@ -12,6 +12,7 @@ jobs:
         with:
           node-version: 20.6.1
           cache: 'npm'
+          cache-dependency-path: 'src/beh/package-lock.json'
       - run: cd src/beh | npm ci | npx gulp
 
   
