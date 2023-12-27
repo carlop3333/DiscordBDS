@@ -17,14 +17,15 @@ jobs:
           node-version: 20.6.1
           cache: 'npm'
           cache-dependency-path: 'src/beh/package-lock.json'
+      
+      - run: npm ci 
+      - run: npm i gulp
+      - run: npx gulp
       - uses: actions/upload-artifact@v4
         with:
           name: Bedrock addon build
           path: C:/mc/build/
           retention-days: 5
-      - run: npm ci 
-      - run: npm i gulp
-      - run: npx gulp
   # download-bedrock-server
   # test-deno-bot:
   #   defaults:
