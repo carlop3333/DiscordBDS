@@ -21,7 +21,7 @@ const requests = [
   { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 1" } },
   {
     requestType: "mcmessage",
-    data: { authorName: "Matiaswazaaaaaa", message: "1234567890qwertyuiopasdfghjklñzxcvbnm", rank: "" },
+    data: { authorName: "Matiaswazaaaaaa", message: "1234567890qwertyuiopasdfghjklñzxcvbnm", rank: "" }, //* Rank is still unused :/
   },
   { requestType: "death", data: { authorName: "Matiaswazaaaaaaa", reason: "died by test 2" } },
   {

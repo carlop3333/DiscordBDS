@@ -1,13 +1,15 @@
 import { CommandClient, GatewayIntents } from "discord";
-import { messageRequest } from "./handler.ts";
+import { messageRequest } from "./types.ts";
 import { colorComp, clog } from "./utils.ts";
+import { startHTTPServer } from "./handler/http.ts";
+import { startProtocolServer } from "./handler/protocol.ts";
 import * as colors from "std/fmt/colors.ts";
+
+
 
 //* Config JSON parse
 import { JsonValue, parse } from "std/jsonc/parse.ts";
 import { fromFileUrl } from "std/path/mod.ts";
-import { startHTTPServer } from "./handler/http.ts";
-import { startProtocolServer } from "./handler/protocol.ts";
 clog.info("Reading config data...");
 const configc: JsonValue = parse(
   new TextDecoder("utf-8").decode(
@@ -38,7 +40,7 @@ await update.text().then((pd) => {
     clog.error(
       `I'm Outdated! New version: ${pd.replace(/\n/g, "")} | Your version: ${
         config.version
-      } | Install here: https://github.com/carlop3333/DiscordBDS/releases/\n`,
+      } | Install here: https://github.com/carlop3333/DiscordBDS/releases/`,
       2
     );
   }
@@ -119,7 +121,7 @@ try {
         colors.cyan(
           "If you are seeing this by first time is because you need to:"
         )
-      )}\n- Go to your Server Settings\n- Go to the integration tab, then select your bot\n- Select the /execute command and select roles to deny access\n`,
+      )}\n- Go to your Server Settings\n- Go to the Integration Tab, then select your bot\n- Select the /execute command and select roles to deny access\n`,
       2
     );
   }

@@ -6,9 +6,7 @@
 
 import {
   genericRequest,
-  requestEventBuilder,
-} from "../handler.ts";
-import { debug } from "../main.ts";
+} from "../types.ts";
 import { clog } from "../utils.ts";
 import * as colors from "std/fmt/colors.ts";
 
@@ -16,12 +14,14 @@ const requestTypes = [
   "connect",
   "ready",
   "update",
-  "mcmessage",
+  "message",
   "death",
   "void",
 ];
 
-// Bedrock server (Shit to declare before this comment)
+
+//local EventTarget
+const emitter = new EventTarget();
 
 //* a ip getter, can't be used yet
 /* function getRemoteIP(ip: Deno.ServeHandlerInfo): Deno.NetAddr {
@@ -33,6 +33,34 @@ const requestTypes = [
   checkAddr(ip.remoteAddr);
   return ip.remoteAddr;
 } */
+
+//error and deny responses
+function deniedResponse(): Response {
+  return new Response(undefined, {status: 403, statusText: "Access Denied"})
+}
+
+function errorResponse(e: unknown): Response {
+  return new Response(`${e}`, {status: 500, statusText: "Internal Server Error"})
+}
+
+//function to pass args to other 
+async function httpEmitter(ev: Event) {
+  const event = ev as CustomEvent;
+  const msgdata = event.detail;
+  const remoteFunc = await import (`../events/connect.ts`);
+  if ("command" in remoteFunc) {
+    clog.debug(`${remoteFunc.command.eventName} <= client requested`)
+    const result = await remoteFunc.command.onExecution(msgdata);
+    emitter.dispatchEvent(new CustomEvent(`${event.type}x`, {"detail": result}));
+  } else {
+    throw new SyntaxError("there is a wrong file in /events (doesn't have the command builder)")
+  }
+}
+
+//listener declarations
+for (const reqType of requestTypes) {
+  emitter.addEventListener(reqType, listener => httpEmitter(listener))
+}
 
 export function startHTTPServer(serverPort: number) {
   clog.info(`Server started in localhost: ${colors.blue(serverPort.toString())}`);
@@ -46,49 +74,23 @@ export function startHTTPServer(serverPort: number) {
         try {
           const jdata: genericRequest = JSON.parse(rawdata);
           if (requestTypes.includes(jdata.requestType)) {
-            try {
-              if (!debug) clog.debug(`${jdata.requestType} => client`); //* DEBUG
-              //never use dynamic import with (fs), it will cause a rce...
-              const event = await import(`./events/${jdata.requestType}.ts`);
-              if ("command" in event) {
-                const command: requestEventBuilder = event.command;
-                if (!debug) clog.debug(`executed ${command.eventName} <=`); //* DEBUG
-                return command.onExecution(jdata);
-              } else {
-                return new Response(`Internal Server Error`, {
-                  status: 500,
-                  statusText: "Internal Server Error",
-                });
-              }
-            } catch {
-              return new Response(`Internal Server Error`, {
-                status: 500,
-                statusText: "Internal Server Error",
-              });
-            }
+            return new Promise<Response>(res => {
+              emitter.addEventListener(`${jdata.requestType}x`, listener => {
+                res(new Response((listener as CustomEvent).detail, {status: 200}));
+              }, {"once": true})
+              emitter.dispatchEvent(new CustomEvent(jdata.requestType, {"detail": jdata, cancelable: false}))
+            })            
           } else {
-            return new Response("Internal Server Error", {
-              status: 500,
-              statusText: "Internal Server Error",
-            });
+            return errorResponse("No requestTypes included in JSON");
           }
-        } catch (_e) {
-          return new Response(undefined, {
-            status: 500,
-            statusText: "Internal Server Error",
-          });
+        } catch (e) {
+          return errorResponse(e);
         }
       } else {
-        return new Response(undefined, {
-          status: 403,
-          statusText: "Access Denied",
-        });
+        return deniedResponse();
       }
     } else {
-      return new Response(undefined, {
-        status: 403,
-        statusText: "Access Denied",
-      });
+      return deniedResponse();
     }
   });
 }

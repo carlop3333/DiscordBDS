@@ -12,5 +12,9 @@ export interface deathRequest extends genericRequest {
   data: { authorName: string; reason: string };
 }
 export interface requestEventBuilder {
-  eventName: string, onExecution(payload: genericRequest): Promise<Response>
+  eventName: string, onExecution(payload: genericRequest): Promise<genericRequest> | genericRequest
 }
+
+
+
+

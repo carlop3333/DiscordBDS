@@ -2,4 +2,5 @@
 /vendor
 # Useless lock files
 *.lock
+# just for not leaking tokens :D
 /.vscode/launch.json

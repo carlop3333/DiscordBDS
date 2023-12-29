@@ -1,4 +1,4 @@
-import { connectRequest } from "../handler.ts";
+import { connectRequest, genericRequest } from "../types.ts";
 import { debug, client, config, geyserCache  } from "../main.ts";
 
 
@@ -10,7 +10,7 @@ import { getGeyserHead } from "../utils.ts";
 export const command = {
   eventName: "connect",
   onExecution(connect: connectRequest) {
-    return new Promise<Response>((res) => {
+    return new Promise<genericRequest>((res) => {
       const embed = new Embed();
       connect.data.join
         ? embed.setColor(0, 255, 34)
@@ -21,18 +21,14 @@ export const command = {
           if (!geyserCache.has(connect.data.authorName)) {
             const texture_id = await getGeyserHead(connect.data.authorName);
             embed.setAuthor({
-                name: `${connect.data.authorName} ${
-                  connect.data.join ? "joined" : "leaved"
-                } the Bedrock server!`,
-                icon_url: `https://mc-heads.net/avatar/${texture_id}`,
-                url: "https://github.com/carlop3333/DiscordBDS", // autospam :)
-            });
+              name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`, 
+              icon_url: `https://mc-heads.net/avatar/${texture_id}`, 
+              url: "https://github.com/carlop3333/DiscordBDS", // autospam :)
+          });
             res()      
           } else {
             embed.setAuthor({
-              name: `${connect.data.authorName} ${
-                connect.data.join ? "joined" : "leaved"
-              } the Bedrock server!`,
+              name: `${connect.data.authorName} ${connect.data.join ? "joined" : "leaved"} the Bedrock server!`,
               icon_url: `https://mc-heads.net/avatar/${geyserCache.get(
                 connect.data.authorName
               )}`,
@@ -51,7 +47,7 @@ export const command = {
         }
       }).then(async () => {
         await client.channels.sendMessage((debug ? Deno.args[3] : config.chatOptions.global) , embed, embed);
-        res(new Response(undefined, {status: 200}))
+        res({requestType: "ok"})
       });
     });
   },

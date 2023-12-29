@@ -1,4 +1,4 @@
-import { deathRequest, requestEventBuilder } from "../handler.ts";
+import { deathRequest, genericRequest, requestEventBuilder } from "../types.ts";
 import { Embed } from "discord";
 import { client, geyserCache, debug, config } from "../main.ts";
 import { getGeyserHead, clog } from '../utils.ts';
@@ -7,7 +7,7 @@ import { getGeyserHead, clog } from '../utils.ts';
 export const command: requestEventBuilder = {
   eventName: "death",
   onExecution(death: deathRequest) {
-      return new Promise<Response>((res) => {
+      return new Promise<genericRequest>((res) => {
         const embed = new Embed();
         // deno-lint-ignore no-async-promise-executor
         new Promise<void>(async (res) => {
@@ -41,7 +41,7 @@ export const command: requestEventBuilder = {
           }
         }).then(async () => {
           await client.channels.sendMessage((debug ? Deno.args[3] : config.chatOptions.global) , embed, embed);
-          res(new Response(undefined, {status: 200}))
+          res({requestType: "ok"})
         })
       })
   }

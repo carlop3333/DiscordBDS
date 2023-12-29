@@ -94,7 +94,6 @@ world.afterEvents.worldInitialize.subscribe(() => {
   c.start();
 });
 
-// Should i do this in another file? I should, but i don't care now
 world.afterEvents.chatSend.subscribe((chat) => {
   var message: messageRequest;
   message = { requestType: "mcmessage", data: { authorName: chat.sender.name, message: chat.message, rank: "" } };
@@ -111,6 +110,8 @@ world.afterEvents.playerLeave.subscribe((info) => {
   conn = { requestType: "connect", data: { authorName: info.playerName, join: false } };
   reqHandler.sendPayload("connect", conn);
 });
+
+// TODO: Move this to config.ts for translations
 world.afterEvents.entityDie.subscribe((info) => {
   if (info.deadEntity instanceof Player) {
     const name = info.deadEntity.name;
@@ -241,7 +242,7 @@ world.afterEvents.entityDie.subscribe((info) => {
         reason = "withered away.";
         break;
     }
-    console.log(`${name} ${reason}`);
+    console.log(`${name} ${reason}`); //* DEBUG
     const dead: deathRequest = { requestType: "death", data: { authorName: name, reason: reason } };
     reqHandler.sendPayload("death", dead);
   }

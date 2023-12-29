@@ -1,6 +1,6 @@
 export const SERVER_URL = "http://localhost:5056";
 
-//edit this if you have other language, but be careful!
+//* edit this if you have other language, but be careful!
 export const translates = {
   "minecraft:allay": "Allay",
   "minecraft:area_effect_cloud": "Area Effect Cloud",
@@ -63,7 +63,7 @@ export const translates = {
   "minecraft:piglin_brute": "Piglin Brute",
   "minecraft:pillager": "Pillager",
   "minecraft:polar_bear": "Polar Bear",
-  "minecraft:potion": "thrown potion",
+  "minecraft:potion": "Thrown Potion",
   "minecraft:pufferfish": "Pufferfish",
   "minecraft:rabbit": "Rabbit",
   "minecraft:ravager": "Ravager",
@@ -101,7 +101,7 @@ export const translates = {
   "minecraft:wolf": "Wolf",
   "minecraft:zoglin": "Zoglin",
   "minecraft:zombie": "Zombie",
-  "minecraft:zombie_horse": "Zombie horse",
+  "minecraft:zombie_horse": "Zombie Horse",
   "minecraft:zombie_villager": "Zombie Villager",
   "minecraft:zombified_piglin": "Zombified Piglin",
 };
