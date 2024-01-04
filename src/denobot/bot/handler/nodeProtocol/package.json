@@ -1,0 +1,17 @@
+{
+  "name": "nodeprotocol",
+  "version": "1.0.0",
+  "description": "nothing to see here",
+  "main": "main.ts",
+  "scripts": {
+    "start": "npx tsx main.ts"
+  },
+  "author": "carlop3k",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "bedrock-protocol": "^3.33.1",
+    "tsx": "^4.7.0",
+    "@types/node": "^20.10.6"
+  },
+  "type": "module"
+}

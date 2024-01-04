@@ -20,8 +20,12 @@ const configc: JsonValue = parse(
 export const config = JSON.parse(JSON.stringify(configc));
 
 //Don't touch also
-export let isBedrockServer = false;
+let isBedrockServer = false;
 export let debug = false;
+
+export function checkBedrock() {
+  return (isBedrockServer) ? true : false;
+}
 
 //Function to enabling bedrock server, required for ready event.
 export function enableBedrock() {
@@ -37,17 +41,17 @@ const update = await fetch(
 );
 await update.text().then((pd) => {
   if (pd.replace(/\n/g, "") !== config.version) {
-    clog.error(
+    clog.warn(
       `I'm Outdated! New version: ${pd.replace(/\n/g, "")} | Your version: ${
         config.version
-      } | Install here: https://github.com/carlop3333/DiscordBDS/releases/`,
-      2
+      } | Install here: https://github.com/carlop3333/DiscordBDS/releases/`
     );
   }
 });
 
 if (typeof Deno.args[0] !== typeof undefined) {
   debug = true;
+  clog.level = 4;
   clog.debug("-- DEBUG ENABLED --")
 }
 
@@ -71,10 +75,10 @@ export const client = new CommandClient({
 
 try {
   client.on("ready", () => {
-    clog.info("Started Bot!");
+    clog.ready("Started Bot!");
   });
 
-  clog.info(`Starting bot!`);
+  clog.start(`Starting bot!`);
   await client.connect();
 
   //executable
@@ -121,8 +125,7 @@ try {
         colors.cyan(
           "If you are seeing this by first time is because you need to:"
         )
-      )}\n- Go to your Server Settings\n- Go to the Integration Tab, then select your bot\n- Select the /execute command and select roles to deny access\n`,
-      2
+      )}\n- Go to your Server Settings\n- Go to the Integration Tab, then select your bot\n- Select the /execute command and select roles to deny access\n`
     );
   }
 
@@ -157,7 +160,7 @@ try {
         dispatchEvent(new CustomEvent("dsignal", { detail: msg }));
       } else {
         if (!info.author.bot) {
-          clog.error("User sent chat action, but server is not enabled", 0);
+          clog.error("User sent chat action, but server is not enabled");
           info.channel.send(
             "The server is still not enabled!",
             undefined,
@@ -176,21 +179,21 @@ try {
     if (handlerType == "protocol") {
       startProtocolServer();
     } else if (handlerType == "http") {
-      startHTTPServer(config.advanced.serverPort);
+      startHTTPServer(config.advanced.botPort);
     } else {
       throw new RangeError("Handler not found");
     }
   } catch (e) {
     if (e instanceof RangeError) {
-      clog.error(`Handler failed with message: ${e}, shutting down....`, 4);
+      clog.fatal(`Handler failed with message: ${e}, shutting down....`);
       Deno.exit(-1)
     } else {
-      clog.error(`Handler failed with message: ${e}, trying to start with other handler type....`, 3);
+      clog.fatal(`Handler failed with message: ${e}, trying to start with other handler type....`);
       try {
-        (handlerType == "protocol") ? startHTTPServer(config.advanced.serverPort) : startProtocolServer();
+        (handlerType == "protocol") ? startHTTPServer(config.advanced.botPort) : startProtocolServer();
         clog.info(`Started "${handlerType == "protocol" ? "http" : "protocol" }" handler`)
       } catch (e) {
-        clog.error(
+        clog.fatal(
           `Shutting down bot: none of the handlers work... (tried with ${handlerType} first)`
         );
       }
@@ -201,7 +204,7 @@ try {
   if (e.status == 401) {
     text = "The token is wrong or you forgot to put one...";
   }
-  clog.error(`Throwed ${e.name} with ${e.status} status: ${text}`, 4);
-  clog.error("Shutting down bot!", 4);
+  clog.fatal(`Throwed ${e.name} with ${e.status} status: ${text}`);
+  clog.fatal("Shutting down bot!");
   Deno.exit(-1)
 }

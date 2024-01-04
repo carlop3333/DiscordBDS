@@ -1,5 +1,5 @@
 {
-  // READ INSTRUCTIONS
+  // READ INSTRUCTIONS: https://github.com/carlop3333/DiscordBDS/
   // Your discord bot token
   "token": "your-token-id",
   // Your discord bot client id
@@ -11,11 +11,13 @@
   "advanced": {
     //* Handler type: Uses protocol as default; fallbacks to http if an error occurs (addon required)
     //! PROTOCOL MODE REQUIRES A XBOX LIVE ACCOUNT | USE A THROWAWAY ONE
-    "handlerType": "http",
-    //! Required for protocol mode, requires a realm id or an server ip
-    "serverID": "your-realmid-or-serverip",
+    "handlerType": "protocol",
+    //! Required for protocol mode, requires a realm LINK (https://realms.gg/xxxx) or an server ip
+    "serverID": "realmsgg-link-or-serverip",
+    //! Required for protocol mode IF SERVER IS USED, it explains itself
+    "serverPort": 19132,
     //! Required for http mode
-    "serverPort": 5056
+    "botPort": 5056
   },
   // The thing for showing player skins on discord, disabled by default due to a bug
   "geyserEmbed": {

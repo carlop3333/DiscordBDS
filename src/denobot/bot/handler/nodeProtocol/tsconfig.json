@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "types": ["@types/node"],
+      "allowJs": false,
+        "alwaysStrict": true,
+        "lib": ["ES2022"]
+    }
+}

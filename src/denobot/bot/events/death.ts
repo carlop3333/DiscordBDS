@@ -13,7 +13,7 @@ export const command: requestEventBuilder = {
         new Promise<void>(async (res) => {
           if (config.geyserEmbed.isEnabled) {
             if (!geyserCache.has(death.data.authorName)) {
-              if (!debug) clog.debug("Didnt found var in cache"); //* Debug
+              clog.debug("Didnt found var in cache"); //* Debug
               const texture_id = await getGeyserHead(death.data.authorName);
               embed.setAuthor({
                   name: `${death.data.authorName} ${death.data.reason}`,
@@ -22,7 +22,7 @@ export const command: requestEventBuilder = {
                 });
                 res();
             } else {
-              if (!debug) clog.debug("Found var in cache"); //* Debug
+              clog.debug("Found var in cache"); //* Debug
               embed.setAuthor({
                 name: `${death.data.authorName} ${death.data.reason}`,
                 icon_url: `https://mc-heads.net/avatar/${geyserCache.get(

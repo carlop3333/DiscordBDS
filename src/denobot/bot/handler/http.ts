@@ -14,7 +14,7 @@ const requestTypes = [
   "connect",
   "ready",
   "update",
-  "message",
+  "mcmessage",
   "death",
   "void",
 ];
@@ -47,7 +47,7 @@ function errorResponse(e: unknown): Response {
 async function httpEmitter(ev: Event) {
   const event = ev as CustomEvent;
   const msgdata = event.detail;
-  const remoteFunc = await import (`../events/connect.ts`);
+  const remoteFunc = await import (`../events/${event.type}.ts`);
   if ("command" in remoteFunc) {
     clog.debug(`${remoteFunc.command.eventName} <= client requested`)
     const result = await remoteFunc.command.onExecution(msgdata);
@@ -81,8 +81,9 @@ export function startHTTPServer(serverPort: number) {
               emitter.dispatchEvent(new CustomEvent(jdata.requestType, {"detail": jdata, cancelable: false}))
             })            
           } else {
-            return errorResponse("No requestTypes included in JSON");
-          }
+            clog.error(`Client did not send a valid requestType!!! | client sent => ${JSON.stringify(jdata)} `);
+            return errorResponse("requestType var not found");
+          } 
         } catch (e) {
           return errorResponse(e);
         }

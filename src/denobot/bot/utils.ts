@@ -1,29 +1,7 @@
 import { debug, config, geyserCache } from "./main.ts";
 import * as colors from "std/fmt/colors.ts";
 import { xuidGrabber } from "./xuid/grabber.ts";
-
-// TODO: use the std/log lib with a consoleHandler
-class CustomLog {
-  #getDate() {
-    return new Date().toLocaleString()
-  }
-  info(text: string) {
-    console.log(`${colors.green(`[${this.#getDate()} ${colors.underline(`INFO]`)}`)} ${colors.italic(text)}`);
-    
-  }
-  // deno-lint-ignore no-inferrable-types
-  error(text:string, code: number = 5) {
-    //* editme 
-    const err_code = (code == 0) ? "VERY LOW" : (code == 1) ? "LOW" : (code == 2) ? "NORMAL" : (code == 3) ? "HIGH" : (code == 4) ? "VERY HIGH" : "UNKNOWN"
-    const info = (code >= 3) 
-      ? colors.red(`[${this.#getDate()} ${colors.underline(`ERROR code ${err_code}`)}`) 
-      : colors.yellow(`[${this.#getDate()}  ${colors.underline(`WARNING code ${err_code}`)} `)
-    console.error(`${info} ${text}`);
-  }
-  debug(text: string) {
-    if (debug) console.log(`${colors.magenta(`[${this.#getDate()} DEBUG]`)} ${text}`);
-  }
-}
+import { createConsola, LogLevel } from "npm:consola@latest/basic";
 
 class ColorConvertor {
   COLOR_LIST = new Map();
@@ -94,7 +72,7 @@ export async function getGeyserHead(authorName: string) {
   if (config.geyserEmbed.grabber == "cxkes") {
     const xuid = await xuidGrabber.getUserData(authorName);
     if (xuid === null) { //detects its ratelimited, puts emergency head
-      clog.error("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--", 2)
+      clog.warn("--\ncxkes ratelimit warning! putting other head instead\ndisable the geyser embed if you want this alert to disappear\n--")
       return "307f479584fccae686003a60800ddfee72affe10e4bb26a7d4a00ccb99797d2";
     } else {
       const GeyserGrab = await fetch(`https://api.geysermc.org/v2/skin/${xuid?.get("xuid-dec")}`);
@@ -110,7 +88,53 @@ export async function getGeyserHead(authorName: string) {
 }
 
 
-export const clog = new CustomLog();
+
+export const clog = createConsola({
+  fancy: true,
+  reporters: [
+    {
+      log: (log) => {
+        const logType = () => {
+          switch (log.type) {
+            case "fatal":
+              return colors.bgRed(
+                colors.bold(`[${log.date.toLocaleString()} FATAL]`)
+              );
+            case "error":
+              return colors.red(
+                colors.bold(`[${log.date.toLocaleString()} ERROR]`)
+              );
+            case "warn":
+                return colors.yellow(
+                    colors.bold(`[${log.date.toLocaleString()} WARN]`)
+                );
+            case "log":
+            case "info":
+                return colors.green(
+                    colors.bold(`[${log.date.toLocaleString()} ${colors.underline("INFO")}]`)
+                );
+            case "ready":
+              return colors.bgGreen(
+                colors.black(
+                  colors.bold(`[${log.date.toLocaleString()} READY]`)
+                )
+              );
+            case "start":
+                return colors.bgYellow(
+                    colors.black(
+                      colors.bold(`[${log.date.toLocaleString()} START]`)
+                    )
+                );
+            case "debug":
+                return colors.magenta(colors.bold(`[${log.date.toLocaleString()} DEBUG]`))
+          }
+        };
+
+        console.log(`${logType()} ${log.args.toString()}`);
+      },
+    },
+  ]
+});
 export const colorComp = new ColorConvertor();
 
 
